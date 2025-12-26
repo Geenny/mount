@@ -1,0 +1,17 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #121212; /* Темный фон */
+  color: #ffffff;
+  font-family: Arial, sans-serif;
+  overflow: hidden; /* Убираем скроллы */
+}
+
+#main_view {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden; /* Без скроллов внутри */
+}

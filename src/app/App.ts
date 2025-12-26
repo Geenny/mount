@@ -1,30 +1,25 @@
-import { DependencyMachine, DependencyConfig } from '../core/machines/dependency/DependencyMachine';
-import { output } from '../utils/output/Output';
 import { BaseWorker } from '../core/base/BaseWorker';
+import { appConfig } from '../config/config.app';
+import { output } from '../utils/output/Output';
 
 export class App extends BaseWorker {
-  private dependencyMachine: DependencyMachine;
-
-  constructor(config: DependencyConfig[]) {
-    super({ ID: 'app', name: 'App' });
-    this.dependencyMachine = new DependencyMachine(config);
+  constructor() {
+    super(appConfig);
   }
 
   async init(): Promise<void> {
+    // Initialization
+    output.log(this, 'App initializing with config:', this.config);
     await super.init();
-    await this.dependencyMachine.initialize();
   }
 
   async destroy(): Promise<void> {
-    await this.dependencyMachine.destroy();
+    // Cleanup
+    await super.destroy();
   }
 
   async start(): Promise<void> {
-    this.isRunning = true;
     output.log(this, 'Engine app started');
-  }
-
-  getDependency<T>(name: string): T {
-    return this.dependencyMachine.get<T>(name);
+    await super.start();
   }
 }

@@ -1,3 +1,7 @@
-// Base types
-export type BaseProps = { ID: string; name: string };
-export type IdentifyType = BaseProps;
+type ConfigType = Record<string, any>;
+
+type IndentifyConfigType = { ID: string, name: string };
+
+type ServiceConfigType = {  }
+
+export { ConfigType, IndentifyConfigType, ServiceConfigType };

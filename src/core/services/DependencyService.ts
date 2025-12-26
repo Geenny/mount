@@ -1,12 +1,9 @@
 import { Subject } from 'rxjs';
-import { BaseService } from '../base/BaseService';
 
-export class DependencyService extends BaseService {
+export class DependencyService {
   protected subject = new Subject();
 
-  constructor() {
-    super({ ID: 'dependencyService', name: 'DependencyService' });
-  }
+  constructor() {}
 
   get observable() {
     return this.subject.asObservable();

@@ -1,30 +1,41 @@
-import { BaseIdentify } from './BaseIdentify';
+import { BaseInit } from './BaseInit';
+import { ConfigType } from './types';
 
-export abstract class BaseWorker extends BaseIdentify {
-  protected isRunning: boolean = false;
+export abstract class BaseWorker extends BaseInit {
+  private _isRunning = false;
+  private _isPaused = false;
 
-  constructor(props: { ID: string; name: string }) {
-    super(props);
+  constructor(config: ConfigType) {
+    super(config);
   }
 
-  async init(): Promise<void> {
-    // Initialization logic
+  protected get isRunning(): boolean {
+    return this._isRunning;
   }
 
-  async destroy(): Promise<void> {
-    this.isRunning = false;
+  protected get isPaused(): boolean {
+    return this._isPaused;
   }
 
   async start(): Promise<void> {
-    this.isRunning = true;
+    if (this._isRunning) {
+      await this.stop();
+    }
+    // Логика старта
+    this._isRunning = true;
+    this._isPaused = false;
   }
 
   async stop(): Promise<void> {
-    this.isRunning = false;
+    // Логика остановки
+    this._isRunning = false;
+    this._isPaused = false;
   }
 
-  async restart(): Promise<void> {
-    await this.stop();
-    await this.start();
+  async pause(): Promise<void> {
+    if (this._isRunning && !this._isPaused) {
+      // Логика паузы
+      this._isPaused = true;
+    }
   }
 }

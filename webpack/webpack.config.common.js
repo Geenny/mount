@@ -19,7 +19,7 @@ module.exports = {
     filename: 'bundle.js',
     path: path.resolve(__dirname, '/'),
     library: {
-      name: 'Engine',
+      name: 'Entry',
       type: 'umd',
       umdNamedDefine: true,
     },
