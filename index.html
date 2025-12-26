@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="resources/common/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="resources/common/styles.css">
+    <title>Engine</title>
+</head>
+<body>
+    <div id="main_view"></div>
+    <script src="./bundle.js"></script>
+    <script>
+        (async () => {
+            const { Entry } = window.Engine;
+            const entry = new Entry();
+            await entry.start();
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "name": "engine",
+  "version": "0.0.48",
+  "description": "Modular engine with DependencyMachine",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "version-patch": "standard-version --skip.changelog -- --release-as patch",
+    "build": "npm run version-patch && webpack --mode production --config ./webpack/webpack.config.production.js",
+    "dev": "webpack serve --mode development --config ./webpack/webpack.config.development.js",
+    "dev-open": "webpack serve --mode development --config ./webpack/webpack.config.development.js --open"
+  },
+  "devDependencies": {
+    "copy-webpack-plugin": "^13.0.1",
+    "standard-version": "^9.5.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.6.3",
+    "webpack": "^5.95.0",
+    "webpack-cli": "^5.1.0",
+    "webpack-dev-server": "^5.1.1",
+    "webpack-merge": "^5.10.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "rxjs": "^7.8.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
