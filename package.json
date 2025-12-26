@@ -1,7 +1,7 @@
 {
-  "name": "engine",
+  "name": "mount",
   "version": "0.0.48",
-  "description": "Modular engine with DependencyMachine",
+  "description": "Modular engine",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -25,6 +25,7 @@
     "rxjs": "^7.8.1"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20.0.0",
+    "npm": ">=7.0.0"
   }
 }
