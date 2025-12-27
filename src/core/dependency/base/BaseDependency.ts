@@ -2,6 +2,8 @@ import { BaseWorker } from 'core/base/BaseWorker';
 import { DependencyConfigType } from 'config/types';
 import { output } from 'utils/output/Output';
 import { ConfigType } from 'core/base';
+import { IBaseDependencyMachine } from 'core/machine/dependency/base/interface';
+import { DependencyName } from 'core/dependency/enums';
 
 export abstract class BaseDependencyMachine {
   // Placeholder for forward reference
@@ -9,16 +11,16 @@ export abstract class BaseDependencyMachine {
 
 export abstract class BaseDependency extends BaseWorker {
   public readonly ID: number;
-  public readonly name: string;
+  public readonly name: DependencyName;
   public readonly options?: ConfigType;
-  public readonly childrens?: any[];
-  public readonly machine: BaseDependencyMachine;
+  public readonly childrens?: ConfigType[];
+  public readonly machine: IBaseDependencyMachine;
   public readonly dependentList: BaseDependency[] = [];
 
-  constructor(config: DependencyConfigType, machine: BaseDependencyMachine) {
+  constructor(config: DependencyConfigType, machine: IBaseDependencyMachine) {
     super(config);
     this.ID = config.ID || 0;
-    this.name = config.name;
+    this.name = config.name as DependencyName;
     this.options = config.options;
     this.childrens = config.childrens;
     this.machine = machine;
@@ -35,7 +37,7 @@ export abstract class BaseDependency extends BaseWorker {
   }
 
   protected async initDependentDependencies(): Promise<void> {
-    const dependencies = (this.machine as any).getDependentDependencies(this.name);
+    const dependencies = this.machine.getDependentDependencies(this.name);
     for (const dep of dependencies) {
       this.dependencyAddToList(dep);
     }

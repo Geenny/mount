@@ -10,6 +10,7 @@ export declare abstract class BaseWorker extends BaseInit {
     start(): Promise<void>;
     stop(): Promise<void>;
     pause(): Promise<void>;
+    unpause(): Promise<void>;
     destroy(): Promise<void>;
     protected onStart(): Promise<void>;
     protected onStop(): Promise<void>;

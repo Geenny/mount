@@ -2,7 +2,8 @@ import { BaseWorker } from 'core/base/BaseWorker';
 import { DependencyMachineConfigType, DependencyConfigType } from 'config/types';
 import { DependencyName } from 'core/dependency/enums';
 import { BaseDependency } from 'core/dependency/base/BaseDependency';
-export declare abstract class BaseDependencyMachine extends BaseWorker {
+import { IBaseDependencyMachine } from './interface';
+export declare abstract class BaseDependencyMachine extends BaseWorker implements IBaseDependencyMachine {
     protected config: DependencyMachineConfigType;
     protected dependencies: Map<DependencyName, BaseDependency>;
     constructor(config: DependencyMachineConfigType);
@@ -21,7 +22,6 @@ export declare abstract class BaseDependencyMachine extends BaseWorker {
     protected dependencyStartAll(): Promise<void>;
     protected dependencyStopAll(): Promise<void>;
     protected dependencyPauseAll(): Promise<void>;
-    protected dependencyUnpause(dependency: BaseDependency): Promise<void>;
     protected dependencyUnpauseAll(): Promise<void>;
     protected onInit(): Promise<void>;
     protected onDestroy(): Promise<void>;

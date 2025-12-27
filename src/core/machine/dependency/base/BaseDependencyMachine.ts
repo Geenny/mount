@@ -3,8 +3,9 @@ import { DependencyMachineConfigType, DependencyConfigType } from 'config/types'
 import { DependencyName } from 'core/dependency/enums';
 import { BaseDependency } from 'core/dependency/base/BaseDependency';
 import { output } from 'utils/output/Output';
+import { IBaseDependencyMachine } from './interface';
 
-export abstract class BaseDependencyMachine extends BaseWorker {
+export abstract class BaseDependencyMachine extends BaseWorker implements IBaseDependencyMachine {
   protected config: DependencyMachineConfigType;
   protected dependencies: Map<DependencyName, BaseDependency> = new Map();
 
@@ -184,16 +185,12 @@ export abstract class BaseDependencyMachine extends BaseWorker {
     }
   }
 
-  protected async dependencyUnpause(dependency: BaseDependency): Promise<void> {
-    if (dependency.isPaused) {
-      await dependency.pause(); // Since pause toggles
-    }
-  }
+
 
   protected async dependencyUnpauseAll(): Promise<void> {
     const promises = Array.from(this.dependencies.values())
       .filter(dep => dep.isPaused)
-      .map(dep => this.dependencyUnpause(dep));
+      .map(dep => dep.unpause());
     await Promise.all(promises);
   }
 
