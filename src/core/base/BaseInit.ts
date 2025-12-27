@@ -12,22 +12,21 @@ export abstract class BaseInit extends BaseConfig {
     return this._isInit;
   }
 
-  init(): this {
-    this.onInit();
+  async init(): Promise<void> {
+    await this.onInit();
     this._isInit = true;
-    return this;
   }
 
-  destroy(): void {
-    this.onDestroy();
+  async destroy(): Promise<void> {
+    await this.onDestroy();
     this._isInit = false;
   }
 
-  protected onInit(): void {
+  protected async onInit(): Promise<void> {
     // Логика при инициализации
   }
 
-  protected onDestroy(): void {
+  protected async onDestroy(): Promise<void> {
     // Логика при уничтожении
   }
 }

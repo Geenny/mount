@@ -14,6 +14,16 @@ module.exports = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
+    fallback: {
+        "fs": false,
+        "module": false
+    },
+    alias: {
+        app: path.join(__dirname, "../", "src/app"),
+        config: path.join(__dirname, "../", "src/config"),
+        core: path.join(__dirname, "../", "src/core"),
+        utils: path.join(__dirname, "../", "src/utils"),
+    }
   },
   output: {
     filename: 'bundle.js',

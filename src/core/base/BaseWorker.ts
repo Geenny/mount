@@ -1,5 +1,6 @@
 import { BaseInit } from './BaseInit';
 import { ConfigType } from './types';
+import { output } from '../../utils/output/Output';
 
 export abstract class BaseWorker extends BaseInit {
   protected _isRunning = false;
@@ -22,6 +23,11 @@ export abstract class BaseWorker extends BaseInit {
   }
 
   async start(): Promise<void> {
+    if (!this.isInit) {
+      output.warn(this, 'Cannot start: not initialized');
+      return;
+    }
+
     if (this._isRunning)
         await this.stop();
     
@@ -44,6 +50,13 @@ export abstract class BaseWorker extends BaseInit {
     this._isPaused = true;
 
     await this.onPause();
+  }
+
+  async destroy(): Promise<void> {
+    if (this.isWorking) {
+      await this.stop();
+    }
+    await super.destroy();
   }
 
   protected async onStart(): Promise<void> {

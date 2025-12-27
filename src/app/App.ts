@@ -1,21 +1,21 @@
-import { BaseWorker } from '../core/base/BaseWorker';
-import { appConfig } from '../config/config.app';
-import { output } from '../utils/output/Output';
+import { BaseWorker } from 'core/base/BaseWorker';
+import { ConfigType } from 'core/base/types';
+import { output } from 'utils/output/Output';
 
 export class App extends BaseWorker {
-  constructor() {
-    super(appConfig);
+  constructor(config: ConfigType) {
+    super(config);
   }
 
-  init(): this {
+  async init(): Promise<void> {
     // Initialization
     output.log(this, 'App initializing with config:', this.config);
-    return super.init();
+    await super.init();
   }
 
-  destroy(): void {
+  async destroy(): Promise<void> {
     // Cleanup
-    super.destroy();
+    await super.destroy();
   }
 
   async start(): Promise<void> {
