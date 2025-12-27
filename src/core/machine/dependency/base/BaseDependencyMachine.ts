@@ -124,54 +124,63 @@ export abstract class BaseDependencyMachine extends BaseWorker {
     let hasChanges = true;
     while (hasChanges) {
       hasChanges = false;
+      const readyToStart: BaseDependency[] = [];
       for (const dep of this.dependencies.values()) {
         if (!dep.isWorking) {
           const deps = this.getDependentDependencies(dep.name as DependencyName);
           if (deps.every(d => d.isWorking)) {
-            await dep.start();
-            hasChanges = true;
+            readyToStart.push(dep);
           }
         }
+      }
+      if (readyToStart.length > 0) {
+        await Promise.all(readyToStart.map(dep => dep.start()));
+        hasChanges = true;
       }
     }
   }
 
-  protected async dependencyStop(dependency: BaseDependency): Promise<void> {
-    if (!dependency.isWorking) return;
 
-    // Stop dependents first
-    const dependents = this.getDependents(dependency.name as DependencyName);
-    for (const dep of dependents) {
-      await this.dependencyStop(dep);
-    }
-
-    await dependency.stop();
-  }
 
   protected async dependencyStopAll(): Promise<void> {
-    // Stop in reverse dependency order
-    const toStop = Array.from(this.dependencies.values()).filter(dep => dep.isWorking);
-    for (const dep of toStop) {
-      await this.dependencyStop(dep);
+    let hasChanges = true;
+    while (hasChanges) {
+      hasChanges = false;
+      const readyToStop: BaseDependency[] = [];
+      for (const dep of this.dependencies.values()) {
+        if (dep.isWorking) {
+          const deps = this.getDependents(dep.name as DependencyName);
+          if (deps.every(d => !d.isWorking)) {
+            readyToStop.push(dep);
+          }
+        }
+      }
+      if (readyToStop.length > 0) {
+        await Promise.all(readyToStop.map(dep => dep.stop()));
+        hasChanges = true;
+      }
     }
   }
 
-  protected async dependencyPause(dependency: BaseDependency): Promise<void> {
-    if (!dependency.isWorking) return;
 
-    // Pause dependents first
-    const dependents = this.getDependents(dependency.name as DependencyName);
-    for (const dep of dependents) {
-      await this.dependencyPause(dep);
-    }
-
-    await dependency.pause();
-  }
 
   protected async dependencyPauseAll(): Promise<void> {
-    const toPause = Array.from(this.dependencies.values()).filter(dep => dep.isWorking);
-    for (const dep of toPause) {
-      await this.dependencyPause(dep);
+    let hasChanges = true;
+    while (hasChanges) {
+      hasChanges = false;
+      const readyToPause: BaseDependency[] = [];
+      for (const dep of this.dependencies.values()) {
+        if (dep.isWorking && !dep.isPaused) {
+          const deps = this.getDependents(dep.name as DependencyName);
+          if (deps.every(d => !d.isWorking || d.isPaused)) {
+            readyToPause.push(dep);
+          }
+        }
+      }
+      if (readyToPause.length > 0) {
+        await Promise.all(readyToPause.map(dep => dep.pause()));
+        hasChanges = true;
+      }
     }
   }
 

@@ -1,11 +1,12 @@
 import { BaseWorker } from 'core/base/BaseWorker';
 import { DependencyConfigType } from 'config/types';
+import { ConfigType } from 'core/base';
 export declare abstract class BaseDependencyMachine {
 }
 export declare abstract class BaseDependency extends BaseWorker {
     readonly ID: number;
     readonly name: string;
-    readonly options?: any;
+    readonly options?: ConfigType;
     readonly childrens?: any[];
     readonly machine: BaseDependencyMachine;
     readonly dependentList: BaseDependency[];

@@ -19,9 +19,7 @@ export declare abstract class BaseDependencyMachine extends BaseWorker {
     protected dependencyDestroyAll(): Promise<void>;
     protected dependencyStart(dependency: BaseDependency): Promise<void>;
     protected dependencyStartAll(): Promise<void>;
-    protected dependencyStop(dependency: BaseDependency): Promise<void>;
     protected dependencyStopAll(): Promise<void>;
-    protected dependencyPause(dependency: BaseDependency): Promise<void>;
     protected dependencyPauseAll(): Promise<void>;
     protected dependencyUnpause(dependency: BaseDependency): Promise<void>;
     protected dependencyUnpauseAll(): Promise<void>;
