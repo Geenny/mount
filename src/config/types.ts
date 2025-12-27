@@ -1,12 +1,12 @@
 import { DependencyName } from "core/dependency/enums";
 import { ConfigType } from "../core/base/types";
 
-type DependencyDefaultConfigType = { options?: ConfigType };
-
-type DependencyMachineConfigType = DependencyDefaultConfigType &{ childrens?: DependencyConfigType[] };
-
 type DependencyID = number; // Unique identifier for each Dependency
 
-type DependencyConfigType = { ID?: DependencyID, name: DependencyName, dependentList?: DependencyName[], options?: ConfigType };
+type DependencyDefaultConfigType = { options?: ConfigType, childrens?: ConfigType[] };
+
+type DependencyMachineConfigType = DependencyDefaultConfigType & { childrens?: DependencyConfigType[] };
+
+type DependencyConfigType = DependencyDefaultConfigType & { ID?: DependencyID, name: DependencyName, dependentList?: DependencyName[] };
 
 export { DependencyMachineConfigType, DependencyConfigType, DependencyID };

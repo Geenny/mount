@@ -1,16 +1,12 @@
 import { DependencyName } from 'core/dependency/enums';
-import { ConfigType } from '../core/base/types';
 import { DependencyMachineConfigType } from './types';
 
-export const appConfig: DependencyMachineConfigType = {
+export const dependencyConfig: DependencyMachineConfigType = {
+    options: { },
     childrens: [
         {
             name: DependencyName.DEPENDENCY_INIT,
-            options: { }
-        },
-        {
-            name: DependencyName.DEPENDENCY_STATS,
-            dependentList: [DependencyName.DEPENDENCY_INIT],
+            dependentList: [ ],
             options: { }
         },
         {
@@ -19,8 +15,13 @@ export const appConfig: DependencyMachineConfigType = {
             options: { }
         },
         {
+            name: DependencyName.DEPENDENCY_STATS,
+            dependentList: [DependencyName.DEPENDENCY_DISPATCHER],
+            options: { }
+        },
+        {
             name: DependencyName.DEPENDENCY_STORAGE,
-            dependentList: [DependencyName.DEPENDENCY_INIT],
+            dependentList: [DependencyName.DEPENDENCY_DISPATCHER],
             options: { }
         }
     ]

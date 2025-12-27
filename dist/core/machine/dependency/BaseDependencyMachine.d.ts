@@ -1,0 +1,32 @@
+import { BaseWorker } from 'core/base/BaseWorker';
+import { DependencyMachineConfigType, DependencyConfigType } from 'config/types';
+import { DependencyName } from 'core/dependency/enums';
+import { BaseDependency } from 'core/dependency/base/BaseDependency';
+export declare abstract class BaseDependencyMachine extends BaseWorker {
+    protected dependencies: Map<DependencyName, BaseDependency>;
+    constructor(config: DependencyMachineConfigType);
+    add(dependencyConfig: DependencyConfigType): void;
+    remove(dependencyName: DependencyName): void;
+    addAll(dependencyConfigs: DependencyConfigType[]): void;
+    removeAll(): void;
+    addByName(dependencyName: DependencyName): void;
+    getDependentDependencies(dependency: BaseDependency): BaseDependency[];
+    protected dependencyInit(dependency: BaseDependency): Promise<void>;
+    protected dependencyInitAll(): Promise<void>;
+    protected dependencyDestroy(dependency: BaseDependency): Promise<void>;
+    protected dependencyDestroyAll(): Promise<void>;
+    protected dependencyStart(dependency: BaseDependency): Promise<void>;
+    protected dependencyStartAll(): Promise<void>;
+    protected dependencyStop(dependency: BaseDependency): Promise<void>;
+    protected dependencyStopAll(): Promise<void>;
+    protected dependencyPause(dependency: BaseDependency): Promise<void>;
+    protected dependencyPauseAll(): Promise<void>;
+    protected dependencyUnpause(dependency: BaseDependency): Promise<void>;
+    protected dependencyUnpauseAll(): Promise<void>;
+    protected onInit(): Promise<void>;
+    protected onDestroy(): Promise<void>;
+    protected onStart(): Promise<void>;
+    protected onStop(): Promise<void>;
+    protected onPause(): Promise<void>;
+    protected onUnpause(): Promise<void>;
+}

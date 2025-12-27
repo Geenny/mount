@@ -1,14 +1,16 @@
-export declare enum DependencyName {
-    DEPENDENCY_INIT = 0,
-    DEPENDENCY_DISPATCHER = 1,// Release master stream for dispatching events between services
-    DEPENDENCY_STORAGE = 2,// Local storage management
-    DEPENDENCY_SERVICE_MACHINE = 3,// 
-    DEPENDENCY_SYSTEM_MACHINE = 4,// Release providers for system-level operations, like: OS data, mouse handlers, keyboard handlers, etc.
-    DEPENDENCY_NETWORK = 5,// Network, on Connection and WebSocket handlers
-    DEPENDENCY_AUTH = 6,// Authentication and user session management
-    DEPENDENCY_PLATFORM = 7,// 
-    DEPENDENCY_LOADER = 8,// Loading resource, assets, files
-    DEPENDENCY_RESOURCE = 9,// Resource management: distribute, store, optimize, parse (for multi-file resources, like: spine or 3d models)
-    DEPENDENCY_LAYOUT = 10,// Layout management: screen size, orientation, responsive design
-    DEPENDENCY_RENDERER = 11
+declare enum DependencyName {
+    DEPENDENCY_INIT = "DEPENDENCY_INIT",
+    DEPENDENCY_STATS = "DEPENDENCY_STATS",// Application statistics and analytics
+    DEPENDENCY_DISPATCHER = "DEPENDENCY_DISPATCHER",// Release master stream on rxjs for dispatching events between services
+    DEPENDENCY_STORAGE = "DEPENDENCY_STORAGE",// Local storage management
+    DEPENDENCY_SERVICE_MACHINE = "DEPENDENCY_SERVICE_MACHINE",// Service providers: Is application started, is hidden, is visible, is online, etc.
+    DEPENDENCY_SYSTEM_MACHINE = "DEPENDENCY_SYSTEM_MACHINE",// Release providers for system-level operations, like: OS data, mouse handlers, keyboard handlers, etc.
+    DEPENDENCY_NETWORK = "DEPENDENCY_NETWORK",// Network, on Connection and WebSocket handlers
+    DEPENDENCY_AUTH = "DEPENDENCY_AUTH",// Authentication and user session management
+    DEPENDENCY_PLATFORM = "DEPENDENCY_PLATFORM",// Platform-specific services: web, mobile, desktop
+    DEPENDENCY_LOADER = "DEPENDENCY_LOADER",// Loading resource, assets, files; Bundle loading, lazy loading, processing
+    DEPENDENCY_RESOURCE = "DEPENDENCY_RESOURCE",// Resource management: distribute, store, optimize, parse (for multi-file resources, like: spine or 3d models)
+    DEPENDENCY_LAYOUT = "DEPENDENCY_LAYOUT",// Layout management: screen size, orientation, responsive design
+    DEPENDENCY_RENDERER = "DEPENDENCY_RENDERER"
 }
+export { DependencyName };

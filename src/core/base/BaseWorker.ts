@@ -47,9 +47,13 @@ export abstract class BaseWorker extends BaseInit {
   async pause(): Promise<void> {
     if (!this.isWorking) return;
     // Логика паузы
-    this._isPaused = true;
+    this._isPaused = !this._isPaused;
 
-    await this.onPause();
+    if (this._isPaused) {
+      await this.onPause();
+    } else {
+      await this.onUnpause();
+    }
   }
 
   async destroy(): Promise<void> {
@@ -67,5 +71,8 @@ export abstract class BaseWorker extends BaseInit {
   }
   protected async onPause(): Promise<void> {
     // Логика при паузе
+  }
+  protected async onUnpause(): Promise<void> {
+    // Логика при снятии с паузы
   }
 }

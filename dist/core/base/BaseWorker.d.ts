@@ -14,4 +14,5 @@ export declare abstract class BaseWorker extends BaseInit {
     protected onStart(): Promise<void>;
     protected onStop(): Promise<void>;
     protected onPause(): Promise<void>;
+    protected onUnpause(): Promise<void>;
 }

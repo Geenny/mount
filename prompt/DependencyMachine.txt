@@ -1,0 +1,55 @@
+Давай создадим DependencyMachine в src/core/machine/dependency
+Он предназначен для того чтобы, добавлять в себя Dependency на DependencyMachine.add(), удалять DependencyMachine.remove() - например, для перезапуска, инициализировать Dependency на DependencyMachine.init и хранить их инстансы в себе, или уничтожить на destroy.
+На DependencyMachine.start он проверит, какие Dependency существуют и запущены ли они.
+Так как Dependency, будет наследником BaseDependency, а он в свою очередь наследник BaseWorker, то по полю isWorking - мы сможем понять запущен ли Dependency или нет.
+Сам Dependency - это оболочка, для разных сервисов или реализаций, которые нужны для работы приложения. Но это не сервис по сути. Это скорее хранилище instance-ов, для обращения к ним.
+DependencyMachine закончит любой из своих sync (init, destroy) и async методов (start, stop, pause), когда все его Dependency закончат свои методы.
+
+Для этого я создал для него конфиг src/config/config.machine.dependency.ts
+
+Делаем следующее:
+1. проверим config.machine.dependency.ts - там должен быть конфиг для DependencyMachine
+2. проверим src/core/dependency/enums.ts - там добавлены все будущие Dependency их имена и краткое описание предназначения, что они в себя будут оборачивать
+3. в App.ts - импортируем конфиг для DependencyMachine
+
+Создадим абстрактный класс BaseDependency в src/core/dependency/base/BaseDependency.ts 
+1. Наследуем его от BaseWorker
+2. В конструкторе передадим конфиг config: DependencyConfigType (src/config/types.ts). Вторым параметром в конструктор добавим machine - сюда передадим machine, как this, которая его создала (счас у на это DependencyMachine)
+2. Добавим readonly ID, name, options?, childrens? - которые получим из config в конструкторе
+4. Добавим readonly machine - и присвоим сюда переданную machine из конструктора
+5. Добавим readonly(если получится) dependentList: BaseDependency[], а также protected методы dependencyAddToList, dependencyRemoveFromList - чтоб заполнять его только instance-ами BaseDependency, без клонов, и очищать список (вызовем при при destroy)
+6. На onInit - создадим и вызовем метод initDependentDependencies - который запросит у this.machine через getDependentDependencies список зависимостей по this, сохранив в this.dependentList с помощью нашего dependencyAddToList
+7. На onDestroy - обнулим все ссылки на this.machine, this.dependentList, вызвав dependencyRemoveFromList
+8. На onStart, onStop, onPause - просто выведем в output.log что Dependency запущен, остановлен или на паузе
+
+Создадим BaseDependencyMachine
+1. Наследуем его от BaseWorker
+2. В конструкторе примем config: DependencyMachineConfigType
+3. Создадим protected dependencies: Map<DependencyName, BaseDependency>
+4. Создадим метод: add(dependencyConfig: DependencyConfigType): void - который, проверит name что такого нет в this.dependencies, и создаст новый instance нужного Dependency по имени из enums.ts, сохранив его в this.dependencies. В конструктор нужно передать конфиг и this (машину)
+5. Создадим метод: remove(dependencyName: DependencyName): void - который проверит есть ли такой dependency в this.dependencies, проверит есть ли запущеные dependency, которые от него зависят, остановит их (просто остановит), вызовет у него destroy и удалит из this.dependencies.
+6. Создадим метод: addAll(dependencyConfigs: DependencyConfigType[]): void - который вызовет this.add для каждого элемента массива
+7. Создадим метод: removeAll(): void - который вызовет this.remove для каждого элемента в this.dependencies
+8. Создадим метод: addByName(dependencyName: DependencyName): void - который найдет в config нужный dependency по имени и вызовет this.add с его конфигом
+9. Создадим метод: getDependentDependencies(dependency: BaseDependency): BaseDependency[] - он итерационно соберет все от чего зависит входящий dependency, и все его родители - получить полный линейный список зависимостей
+10. Создадим метод: protected dependencyInit(): Promise<void> - который инициализирует все зависимости
+11. Создадим метод: protected dependencyInitAll(): Promise<void> - который инициализирует все зависимости
+12. Создадим метод: protected dependencyDestroy(): Promise<void> - который уничтожит все зависимости
+13. Создадим метод: protected dependencyDestroyAll(): Promise<void> - который уничтожит все зависимости
+14. Создадим метод: protected dependencyStart( dependency: BaseDependency ): Promise<void> - который запустит входящую зависимость, если она не запущена (ее isWorking=false), но все от чего она зависитит - запущены (их isWorking=true)
+15. Создадим метод: protected dependencyStartAll(): Promise<void> - который запустит все зависимости, которые не запущены, но от чего они зависят - запущены
+16. Создадим метод: protected dependencyStop( dependency: BaseDependency ): Promise<void> - который остановит входящую зависимость, если она запущена (ее isWorking=true), и все зависимости от нее зависящие - остановит (если их isWorking=true)
+17. Создадим метод: protected dependencyStopAll(): Promise<void> - который остановит все зависимости, которые запущены, и все зависимости от них зависящие - остановит (если их isWorking=true)
+18. Создадим метод: protected dependencyPause( dependency: BaseDependency ): Promise<void> - который поставит на паузу входящую зависимость, если она запущена (ее isWorking=true), и все зависимости от нее зависящие - поставит на паузу (если их isWorking=true)
+19. Создадим метод: protected dependencyPauseAll(): Promise<void> - который поставит на паузу все зависимости, которые запущены (isWorking=true)
+20. И для unpause
+21. На onInit вызовем this.dependencyInitAll()
+22. На onDestroy вызовем this.dependencyDestroyAll()
+23. На onStart вызовем this.dependencyStartAll()
+24. На onStop вызовем this.dependencyStopAll()
+25. На onPause вызовем this.dependencyPauseAll()
+26. На onUnpause вызовем this.dependencyUnpauseAll()
+
+Создадим DependencyMachine в src/core/machine/dependency/DependencyMachine.ts отнаследуем его от BaseDependencyMachine
+
+Добавим DependencyMachine в App.ts на destroy, init, start, pause, stop

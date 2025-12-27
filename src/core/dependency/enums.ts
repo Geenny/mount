@@ -1,4 +1,4 @@
-export enum DependencyName {
+enum DependencyName {
     DEPENDENCY_INIT = "DEPENDENCY_INIT",
     DEPENDENCY_STATS = "DEPENDENCY_STATS", // Application statistics and analytics
     DEPENDENCY_DISPATCHER = "DEPENDENCY_DISPATCHER", // Release master stream on rxjs for dispatching events between services
@@ -12,4 +12,6 @@ export enum DependencyName {
     DEPENDENCY_RESOURCE = "DEPENDENCY_RESOURCE", // Resource management: distribute, store, optimize, parse (for multi-file resources, like: spine or 3d models)
     DEPENDENCY_LAYOUT = "DEPENDENCY_LAYOUT", // Layout management: screen size, orientation, responsive design
     DEPENDENCY_RENDERER = "DEPENDENCY_RENDERER", // Renderer management: WebGL, Canvas2D, SVG
-}
+};
+
+export { DependencyName };
