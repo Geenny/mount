@@ -5,8 +5,8 @@ export const dependencyConfig: DependencyMachineConfigType = {
     options: { },
     childrens: [
         {
-            name: DependencyName.DEPENDENCY_INIT,
-            dependentList: [ ],
+            name: DependencyName.DEPENDENCY_STATS,
+            dependentList: [DependencyName.DEPENDENCY_DISPATCHER],
             options: { }
         },
         {
@@ -15,14 +15,14 @@ export const dependencyConfig: DependencyMachineConfigType = {
             options: { }
         },
         {
-            name: DependencyName.DEPENDENCY_STATS,
+            name: DependencyName.DEPENDENCY_STORAGE,
             dependentList: [DependencyName.DEPENDENCY_DISPATCHER],
             options: { }
         },
         {
-            name: DependencyName.DEPENDENCY_STORAGE,
-            dependentList: [DependencyName.DEPENDENCY_DISPATCHER],
+            name: DependencyName.DEPENDENCY_INIT,
+            dependentList: [ ],
             options: { }
-        }
+        },
     ]
 };

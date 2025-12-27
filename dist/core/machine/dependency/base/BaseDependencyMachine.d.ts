@@ -3,6 +3,7 @@ import { DependencyMachineConfigType, DependencyConfigType } from 'config/types'
 import { DependencyName } from 'core/dependency/enums';
 import { BaseDependency } from 'core/dependency/base/BaseDependency';
 export declare abstract class BaseDependencyMachine extends BaseWorker {
+    protected config: DependencyMachineConfigType;
     protected dependencies: Map<DependencyName, BaseDependency>;
     constructor(config: DependencyMachineConfigType);
     add(dependencyConfig: DependencyConfigType): void;
@@ -10,7 +11,8 @@ export declare abstract class BaseDependencyMachine extends BaseWorker {
     addAll(dependencyConfigs: DependencyConfigType[]): void;
     removeAll(): void;
     addByName(dependencyName: DependencyName): void;
-    getDependentDependencies(dependency: BaseDependency): BaseDependency[];
+    getDependentDependencies(dependencyName: DependencyName): BaseDependency[];
+    getDependents(dependencyName: DependencyName): BaseDependency[];
     protected dependencyInit(dependency: BaseDependency): Promise<void>;
     protected dependencyInitAll(): Promise<void>;
     protected dependencyDestroy(dependency: BaseDependency): Promise<void>;

@@ -1,6 +1,7 @@
 import { BaseWorker } from 'core/base/BaseWorker';
 import { DependencyConfigType } from 'config/types';
 import { output } from 'utils/output/Output';
+import { ConfigType } from 'core/base';
 
 export abstract class BaseDependencyMachine {
   // Placeholder for forward reference
@@ -9,7 +10,7 @@ export abstract class BaseDependencyMachine {
 export abstract class BaseDependency extends BaseWorker {
   public readonly ID: number;
   public readonly name: string;
-  public readonly options?: any;
+  public readonly options?: ConfigType;
   public readonly childrens?: any[];
   public readonly machine: BaseDependencyMachine;
   public readonly dependentList: BaseDependency[] = [];
@@ -34,7 +35,7 @@ export abstract class BaseDependency extends BaseWorker {
   }
 
   protected async initDependentDependencies(): Promise<void> {
-    const dependencies = (this.machine as any).getDependentDependencies(this);
+    const dependencies = (this.machine as any).getDependentDependencies(this.name);
     for (const dep of dependencies) {
       this.dependencyAddToList(dep);
     }

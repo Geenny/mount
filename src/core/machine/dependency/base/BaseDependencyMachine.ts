@@ -5,10 +5,12 @@ import { BaseDependency } from 'core/dependency/base/BaseDependency';
 import { output } from 'utils/output/Output';
 
 export abstract class BaseDependencyMachine extends BaseWorker {
+  protected config: DependencyMachineConfigType;
   protected dependencies: Map<DependencyName, BaseDependency> = new Map();
 
   constructor(config: DependencyMachineConfigType) {
     super(config);
+    this.config = config;
   }
 
   add(dependencyConfig: DependencyConfigType): void {
@@ -52,10 +54,38 @@ export abstract class BaseDependencyMachine extends BaseWorker {
     // this.add(config);
   }
 
-  getDependentDependencies(dependency: BaseDependency): BaseDependency[] {
-    // Iterative collection of dependencies
+  public getDependentDependencies(dependencyName: DependencyName): BaseDependency[] {
     const result: BaseDependency[] = [];
-    // Placeholder implementation
+    const visited = new Set<DependencyName>();
+
+    const collect = (name: DependencyName) => {
+      if (visited.has(name)) return;
+      visited.add(name);
+
+      const childConfig = this.config.childrens?.find(c => c.name === name);
+      if (childConfig?.dependentList) {
+        childConfig.dependentList.forEach((depName: string) => {
+          const dep = this.dependencies.get(depName as DependencyName);
+          if (dep) {
+            result.push(dep);
+          }
+          collect(depName as DependencyName); // Recursive
+        });
+      }
+    };
+
+    collect(dependencyName);
+    return result;
+  }
+
+  getDependents(dependencyName: DependencyName): BaseDependency[] {
+    const result: BaseDependency[] = [];
+    for (const [name, dep] of this.dependencies) {
+      const deps = this.getDependentDependencies(name);
+      if (deps.some(d => d.name === dependencyName)) {
+        result.push(dep);
+      }
+    }
     return result;
   }
 
@@ -82,46 +112,67 @@ export abstract class BaseDependencyMachine extends BaseWorker {
   }
 
   protected async dependencyStart(dependency: BaseDependency): Promise<void> {
-    if (!dependency.isWorking) {
-      // Check if all dependencies are working
-      // Placeholder
+    if (dependency.isWorking) return;
+
+    const deps = this.getDependentDependencies(dependency.name as DependencyName);
+    if (deps.every(d => d.isWorking)) {
       await dependency.start();
     }
   }
 
   protected async dependencyStartAll(): Promise<void> {
-    // Start dependencies in order
-    for (const dep of this.dependencies.values()) {
-      await this.dependencyStart(dep);
+    let hasChanges = true;
+    while (hasChanges) {
+      hasChanges = false;
+      for (const dep of this.dependencies.values()) {
+        if (!dep.isWorking) {
+          const deps = this.getDependentDependencies(dep.name as DependencyName);
+          if (deps.every(d => d.isWorking)) {
+            await dep.start();
+            hasChanges = true;
+          }
+        }
+      }
     }
   }
 
   protected async dependencyStop(dependency: BaseDependency): Promise<void> {
-    if (dependency.isWorking) {
-      // Stop dependents
-      await dependency.stop();
+    if (!dependency.isWorking) return;
+
+    // Stop dependents first
+    const dependents = this.getDependents(dependency.name as DependencyName);
+    for (const dep of dependents) {
+      await this.dependencyStop(dep);
     }
+
+    await dependency.stop();
   }
 
   protected async dependencyStopAll(): Promise<void> {
-    // Stop in reverse order
-    const deps = Array.from(this.dependencies.values()).reverse();
-    for (const dep of deps) {
+    // Stop in reverse dependency order
+    const toStop = Array.from(this.dependencies.values()).filter(dep => dep.isWorking);
+    for (const dep of toStop) {
       await this.dependencyStop(dep);
     }
   }
 
   protected async dependencyPause(dependency: BaseDependency): Promise<void> {
-    if (dependency.isWorking) {
-      await dependency.pause();
+    if (!dependency.isWorking) return;
+
+    // Pause dependents first
+    const dependents = this.getDependents(dependency.name as DependencyName);
+    for (const dep of dependents) {
+      await this.dependencyPause(dep);
     }
+
+    await dependency.pause();
   }
 
   protected async dependencyPauseAll(): Promise<void> {
-    const promises = Array.from(this.dependencies.values())
-      .filter(dep => dep.isWorking)
-      .map(dep => this.dependencyPause(dep));
-    await Promise.all(promises);
+    const toPause = Array.from(this.dependencies.values()).filter(dep => dep.isWorking);
+    for (const dep of toPause) {
+      await this.dependencyPause(dep);
+    }
   }
 
   protected async dependencyUnpause(dependency: BaseDependency): Promise<void> {
