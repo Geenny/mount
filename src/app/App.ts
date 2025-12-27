@@ -7,19 +7,29 @@ export class App extends BaseWorker {
     super(appConfig);
   }
 
-  async init(): Promise<void> {
+  init(): this {
     // Initialization
     output.log(this, 'App initializing with config:', this.config);
-    await super.init();
+    return super.init();
   }
 
-  async destroy(): Promise<void> {
+  destroy(): void {
     // Cleanup
-    await super.destroy();
+    super.destroy();
   }
 
   async start(): Promise<void> {
     output.log(this, 'Engine app started');
     await super.start();
+  }
+
+  async stop(): Promise<void> {
+    output.log(this, 'Engine app stopped');
+    await super.stop();
+  }
+
+  async pause(): Promise<void> {
+    output.log(this, 'Engine app paused');
+    await super.pause();
   }
 }

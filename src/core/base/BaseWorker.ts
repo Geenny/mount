@@ -2,40 +2,57 @@ import { BaseInit } from './BaseInit';
 import { ConfigType } from './types';
 
 export abstract class BaseWorker extends BaseInit {
-  private _isRunning = false;
-  private _isPaused = false;
+  protected _isRunning = false;
+  protected _isPaused = false;
 
   constructor(config: ConfigType) {
     super(config);
   }
 
-  protected get isRunning(): boolean {
+  public get isRunning(): boolean {
     return this._isRunning;
   }
 
-  protected get isPaused(): boolean {
+  public get isPaused(): boolean {
     return this._isPaused;
   }
 
+  public get isWorking(): boolean {
+    return this._isRunning && !this._isPaused;
+  }
+
   async start(): Promise<void> {
-    if (this._isRunning) {
-      await this.stop();
-    }
-    // Логика старта
+    if (this._isRunning)
+        await this.stop();
+    
+    await this.onStart();
+
     this._isRunning = true;
     this._isPaused = false;
   }
 
   async stop(): Promise<void> {
-    // Логика остановки
+    await this.onStop();
+
     this._isRunning = false;
     this._isPaused = false;
   }
 
   async pause(): Promise<void> {
-    if (this._isRunning && !this._isPaused) {
-      // Логика паузы
-      this._isPaused = true;
-    }
+    if (!this.isWorking) return;
+    // Логика паузы
+    this._isPaused = true;
+
+    await this.onPause();
+  }
+
+  protected async onStart(): Promise<void> {
+    // Логика при старте
+  }
+  protected async onStop(): Promise<void> {
+    // Логика при остановке
+  }
+  protected async onPause(): Promise<void> {
+    // Логика при паузе
   }
 }
