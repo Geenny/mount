@@ -9,7 +9,7 @@ export declare abstract class BaseDependency extends BaseWorker {
     readonly ID: number;
     readonly name: DependencyName;
     readonly options?: ConfigType;
-    readonly childrens?: any[];
+    readonly childrens?: ConfigType[];
     readonly machine: IBaseDependencyMachine;
     readonly dependentList: BaseDependency[];
     constructor(config: DependencyConfigType, machine: IBaseDependencyMachine);
