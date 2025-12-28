@@ -11,5 +11,6 @@ export class DependencyStorage extends BaseDependencyDispatch {
   // Specific logic for storage dependency
   async onStart(): Promise<void> {
     await super.onStart();
+
   }
 }

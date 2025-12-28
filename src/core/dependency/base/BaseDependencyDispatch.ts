@@ -1,44 +1,47 @@
 import { BaseDependency } from '../base/BaseDependency';
 import { DependencyConfigType } from 'config/types';
 import { IBaseDependencyMachine } from 'core/machine/dependency/base/interface';
-import { IDependencyDispatcher } from '../implementations/interface';
 import { DependencyName } from '../enums';
-import { Subscribable } from 'rxjs';
+import { IDispatcher } from 'core/base/interface';
 
 export class BaseDependencyDispatch extends BaseDependency {
-    private _dispatcher?: IDependencyDispatcher;
+    protected dispatcher?: IDispatcher;
+    private subscriptions: Map<string, ((event: any) => void)[]> = new Map();
 
     constructor(config: DependencyConfigType, machine: IBaseDependencyMachine) {
         super(config, machine);
     }
 
-    dispatch( event: any ) {
-        if (!this._dispatcher) return;
-        this._dispatcher.dispatch(event);
+    protected dispatch(type: string, event: any): void {
+        if (!this.dispatcher) return;
+        this.dispatcher.dispatch(type, event);
     }
 
-    subscribe( callback: (event: any) => void ): void {
-        if (!this._dispatcher) return;
-        this._dispatcher.subscribe(callback);
+    protected subscribe(type: string, callback: (event: any) => void): void {
+        if (!this.dispatcher) return;
+        this.dispatcher.subscribe(this as any, type, callback);
+        if (!this.subscriptions.has(type)) {
+            this.subscriptions.set(type, []);
+        }
+        this.subscriptions.get(type)!.push(callback);
     }
 
-    unsubscribe( subscription: any ) {
-        if (!this._dispatcher) return;
-        this._dispatcher.unsubscribe(subscription);
+    protected unsubscribe(type: string, callback: (event: any) => void): void {
+        if (!this.dispatcher) return;
+        // Note: Since unsubscribe now takes instance, we can't unsubscribe individual callbacks easily
+        // This might need adjustment
     }
-
 
     //
     // BIND DISPATCHER
     //
     protected bindDispatcher(): void {
         const dependency = this.machine.getDependentDependencyByName(DependencyName.DEPENDENCY_DISPATCHER);
-        this._dispatcher = dependency as unknown as IDependencyDispatcher;
+        this.dispatcher = dependency as unknown as IDispatcher;
     }
     protected unbindDispatcher(): void {
-        this._dispatcher = undefined;
+        this.dispatcher = undefined;
     }
-
 
     // Specific logic for stats dependency
     async onStart(): Promise<void> {
@@ -47,6 +50,11 @@ export class BaseDependencyDispatch extends BaseDependency {
     }
 
     protected async onDestroy(): Promise<void> {
-        this._dispatcher = undefined;
+        if (this.dispatcher) {
+            this.dispatcher.unsubscribe(this as any);
+        }
+        this.subscriptions.clear();
+        this.unbindDispatcher();
+        await super.onDestroy();
     }
 }

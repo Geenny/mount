@@ -12,6 +12,10 @@ export abstract class BaseInit extends BaseConfig {
     return this._isInit;
   }
 
+  public get isDestroyed(): boolean {
+    return !this._isInit;
+  }
+
   async init(): Promise<void> {
     await this.onInit();
     this._isInit = true;

@@ -1,53 +1,84 @@
 import { BaseDependency } from '../base/BaseDependency';
 import { DependencyConfigType } from 'config/types';
 import { Subject, Subscription } from 'rxjs';
-import { IDependencyDispatcher } from './interface';
 import { IBaseDependencyMachine } from 'core/machine/dependency/base/interface';
+import { IDispatcher } from 'core/base/interface';
 
-export class DependencyDispatcher extends BaseDependency implements IDependencyDispatcher {
-  private masterStream: Subject<any> | null = null;
+export class DependencyDispatcher extends BaseDependency implements IDispatcher {
+  private streams: Map<string, Subject<any>> = new Map();
+  private subscriptionsByInstance: Map<IDispatcher, Map<string, Subscription>> = new Map();
 
   constructor(config: DependencyConfigType, machine: IBaseDependencyMachine) {
     super(config, machine);
   }
 
-  private createMasterStream(): void {
-    this.masterStream = new Subject<any>();
-  }
-
-  private destroyMasterStream(): void {
-    if (this.masterStream) {
-      this.masterStream.complete();
-      this.masterStream = null;
+  subscribe(instance: IDispatcher, type: string, observer: (value: any) => void): void {
+    if (!this.subscriptionsByInstance.has(instance)) {
+      this.subscriptionsByInstance.set(instance, new Map());
+    }
+    const instSubs = this.subscriptionsByInstance.get(instance)!;
+    if (!instSubs.has(type)) {
+      if (!this.streams.has(type)) {
+        this.streams.set(type, new Subject<any>());
+      }
+      const stream = this.streams.get(type)!;
+      const subscription = stream.subscribe(observer);
+      instSubs.set(type, subscription);
     }
   }
 
-  subscribe(observer: (value: any) => void): Subscription {
-    if (!this.masterStream) {
-      throw new Error('Master stream not initialized');
+  unsubscribe(instance: IDispatcher): void {
+    const instSubs = this.subscriptionsByInstance.get(instance);
+    if (instSubs) {
+      for (const sub of instSubs.values()) {
+        sub.unsubscribe();
+      }
+      this.subscriptionsByInstance.delete(instance);
     }
-    return this.masterStream.subscribe(observer);
   }
 
-  unsubscribe(subscription: Subscription): void {
-    subscription.unsubscribe();
+  dispatch(type: string, value: any): void {
+    this.cleanDeadInstances();
+    const stream = this.streams.get(type);
+    if (stream) {
+      stream.next(value);
+    }
   }
 
-  dispatch(value: any): void {
-    if (!this.masterStream) {
-      throw new Error('Master stream not initialized');
+  private cleanDeadInstances(): void {
+    for (const [instance, instSubs] of this.subscriptionsByInstance) {
+      // Assuming instance has isDestroyed property or similar
+      if ((instance as any).isDestroyed) {
+        for (const sub of instSubs.values()) {
+          sub.unsubscribe();
+        }
+        this.subscriptionsByInstance.delete(instance);
+      }
     }
-    this.masterStream.next(value);
+  }
+
+  private destroyStreams(): void {
+    for (const [type, stream] of this.streams) {
+      stream.complete();
+    }
+    this.streams.clear();
+
+    for (const instSubs of this.subscriptionsByInstance.values()) {
+      for (const sub of instSubs.values()) {
+        sub.unsubscribe();
+      }
+    }
+    this.subscriptionsByInstance.clear();
   }
 
   // Specific logic for dispatcher dependency
   async onStart(): Promise<void> {
     await super.onStart();
-    this.createMasterStream();
+    // Streams created on demand
   }
 
   async onStop(): Promise<void> {
-    this.destroyMasterStream();
+    this.destroyStreams();
     await super.onStop();
   }
 }
