@@ -1,5 +1,6 @@
 import { App } from 'app/App';
-import { appConfig as config } from 'config/config.app';
+import { applicationConfigGet } from 'app/AppConfig';
+import { ApplicationConfigType } from 'config/types';
 
 declare global {
   interface Window {
@@ -8,16 +9,20 @@ declare global {
 }
 
 export class Entry {
-  private app: App;
+  private app?: App;
+  private applicationConfig?: ApplicationConfigType;
 
   constructor() {
-    this.app = new App(config);
-
-    if (config.debug && typeof window !== 'undefined')
+    this.applicationConfig = applicationConfigGet();
+    this.app = new App(this.applicationConfig);
+    
+    if (this.app.isDebug && typeof window !== 'undefined')
       window.app = this.app;
   }
 
   async start() {
+    if (!this.app) return;
+
     await this.app.init();
     await this.app.start();
   }

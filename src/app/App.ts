@@ -1,18 +1,22 @@
 import { BaseWorker } from 'core/base/BaseWorker';
-import { ConfigType } from 'core/base/types';
 import { output } from 'utils/output/Output';
 import { DependencyMachine } from 'core/machine/dependency/implementations/DependencyMachine';
+import { ApplicationConfigType, DependencyMachineConfigType } from 'config/types';
 
 export class App extends BaseWorker {
   private dependencyMachine?: DependencyMachine;
 
-  constructor(config: ConfigType) {
+  constructor(config: ApplicationConfigType) {
     super(config);
   }
 
+  get isDebug(): boolean { return this.config.debug === true; }
+
   protected async onInit(): Promise<void> {
     output.log(this, 'App initializing with config:', this.config);
-    this.dependencyMachine = new DependencyMachine();
+
+    const dependencyMachineConfig = this.config.configs?.dependencyMachineConfig as DependencyMachineConfigType
+    this.dependencyMachine = new DependencyMachine(dependencyMachineConfig);
     await this.dependencyMachine.init();
   }
 

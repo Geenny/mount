@@ -3,6 +3,21 @@ import { ConfigType } from "../core/base/types";
 import { BaseDependency } from "core/dependency/base/BaseDependency";
 import { IBaseDependencyMachine } from "core/machine/dependency/base/interface";
 
+//
+// APPLICATION TYPES
+//
+
+type ApplicationConfigType = {
+    name: string,
+    version: string,
+    debug?: boolean,
+    configs?: Record<string, ConfigType>;
+};
+
+//
+// DEPENDENCY TYPES
+//
+
 type DependencyID = number; // Unique identifier for each Dependency
 
 type DependencyDefaultConfigType = { options?: ConfigType, childrens?: ConfigType[] };
@@ -11,4 +26,4 @@ type DependencyMachineConfigType = DependencyDefaultConfigType & { childrens?: D
 
 type DependencyConfigType = DependencyDefaultConfigType & { ID?: DependencyID, name: DependencyName, dependentList?: DependencyName[], instance: new (config: DependencyConfigType, machine: IBaseDependencyMachine) => BaseDependency };
 
-export { DependencyMachineConfigType, DependencyConfigType, DependencyID };
+export { ApplicationConfigType, DependencyMachineConfigType, DependencyConfigType, DependencyID };

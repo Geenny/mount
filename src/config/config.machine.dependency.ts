@@ -5,7 +5,7 @@ import { DependencyDispatcher } from 'core/dependency/implementations/Dependency
 import { DependencyStats } from 'core/dependency/implementations/DependencyStats';
 import { DependencyStorage } from 'core/dependency/implementations/DependencyStorage';
 
-export const dependencyConfig: DependencyMachineConfigType = {
+export const dependencyMachineConfig: DependencyMachineConfigType = {
     options: { },
     childrens: [
         {

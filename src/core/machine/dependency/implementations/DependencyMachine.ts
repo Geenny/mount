@@ -1,9 +1,8 @@
 import { BaseDependencyMachine } from '../base/BaseDependencyMachine';
 import { DependencyMachineConfigType, DependencyConfigType } from 'config/types';
-import { dependencyConfig } from 'config/config.machine.dependency';
 
 export class DependencyMachine extends BaseDependencyMachine {
-  constructor(config: DependencyMachineConfigType = dependencyConfig) {
+  constructor(config: DependencyMachineConfigType) {
     super(config);
     // Add initial dependencies from config
     if (config.childrens) {
