@@ -1,5 +1,5 @@
 import { App } from 'app/App';
-import { applicationConfigGet } from 'app/AppConfig';
+import { AppConfig } from 'app/AppConfig';
 import { ApplicationConfigType } from 'config/types';
 
 declare global {
@@ -13,7 +13,7 @@ export class Entry {
   private applicationConfig?: ApplicationConfigType;
 
   constructor() {
-    this.applicationConfig = applicationConfigGet();
+    this.applicationConfig = this.configGet();
     this.app = new App(this.applicationConfig);
     
     if (this.app.isDebug && typeof window !== 'undefined')
@@ -25,5 +25,14 @@ export class Entry {
 
     await this.app.init();
     await this.app.start();
+  }
+
+  /**
+   * For overriden in subclasses to provide custom config
+   * @returns @ApplicationConfigType
+   */
+  configGet(): ApplicationConfigType {
+    const appConfig = new AppConfig();
+    return appConfig.configGet();
   }
 }

@@ -1,4 +1,4 @@
-import { BaseDependency } from '../base/BaseDependency';
+import { BaseDependency } from 'core/dependency/base/BaseDependency';
 import { DependencyConfigType } from 'config/types';
 import { IBaseDependencyMachine } from 'core/machine/dependency/base/interface';
 

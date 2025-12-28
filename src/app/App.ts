@@ -1,6 +1,6 @@
 import { BaseWorker } from 'core/base/BaseWorker';
 import { output } from 'utils/output/Output';
-import { DependencyMachine } from 'core/machine/dependency/implementations/DependencyMachine';
+import { DependencyMachine } from 'core/machine/dependency/DependencyMachine';
 import { ApplicationConfigType, DependencyMachineConfigType } from 'config/types';
 
 export class App extends BaseWorker {
@@ -15,9 +15,7 @@ export class App extends BaseWorker {
   protected async onInit(): Promise<void> {
     output.log(this, 'App initializing with config:', this.config);
 
-    const dependencyMachineConfig = this.config.configs?.dependencyMachineConfig as DependencyMachineConfigType
-    this.dependencyMachine = new DependencyMachine(dependencyMachineConfig);
-    await this.dependencyMachine.init();
+    await this.dependencyInit();
   }
 
   protected async onDestroy(): Promise<void> {
@@ -27,10 +25,10 @@ export class App extends BaseWorker {
   }
 
   protected async onStart(): Promise<void> {
-    output.log(this, 'Engine app started');
     if (this.dependencyMachine) {
       await this.dependencyMachine.start();
     }
+    output.log(this, 'Engine app started');
   }
 
   protected async onStop(): Promise<void> {
@@ -52,5 +50,16 @@ export class App extends BaseWorker {
     if (this.dependencyMachine) {
       await this.dependencyMachine.pause(); // Since pause toggles
     }
+  }
+
+
+  //
+  // DEPENDENCY MACHINE
+  //
+
+  protected async dependencyInit(): Promise<void> {
+    const dependencyMachineConfig = this.config.configs?.dependencyMachineConfig as DependencyMachineConfigType
+    this.dependencyMachine = new DependencyMachine(dependencyMachineConfig);
+    await this.dependencyMachine.init();
   }
 }

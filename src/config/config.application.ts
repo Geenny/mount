@@ -1,8 +1,8 @@
-import { ApplicationConfigType, DependencyMachineConfigType } from './types';
+import { ApplicationConfigType } from './types';
 
 export const applicationConfig: ApplicationConfigType = {
   name: 'Mount App',
-  version: '0.0.54',
+  version: '1',
   debug: true,
   configs: { }
   // Добавьте другие настройки по необходимости

@@ -20,5 +20,4 @@ export class Output {
     }
 }
 
-const output = new Output();
-export { output };
+export const output = new Output();

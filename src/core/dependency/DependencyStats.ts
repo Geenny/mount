@@ -1,6 +1,6 @@
 import { DependencyConfigType } from 'config/types';
 import { IBaseDependencyMachine } from 'core/machine/dependency/base/interface';
-import { BaseDependencyDispatch } from '../base/BaseDependencyDispatch';
+import { BaseDependencyDispatch } from 'core/dependency/base/BaseDependencyDispatch';
 
 export class DependencyStats extends BaseDependencyDispatch {
 

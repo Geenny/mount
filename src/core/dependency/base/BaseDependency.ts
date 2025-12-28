@@ -5,10 +5,6 @@ import { ConfigType } from 'core/base';
 import { IBaseDependencyMachine } from 'core/machine/dependency/base/interface';
 import { DependencyName } from 'core/dependency/enums';
 
-export abstract class BaseDependencyMachine {
-  // Placeholder for forward reference
-}
-
 export abstract class BaseDependency extends BaseWorker {
   public readonly ID: number;
   public readonly name: DependencyName;

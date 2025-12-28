@@ -13,3 +13,5 @@ export class Storage {
         return this.data.get(name);
     }
 }
+
+export const storage = new Storage();

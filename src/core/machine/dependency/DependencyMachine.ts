@@ -1,4 +1,4 @@
-import { BaseDependencyMachine } from '../base/BaseDependencyMachine';
+import { BaseDependencyMachine } from 'core/machine/dependency/base/BaseDependencyMachine';
 import { DependencyMachineConfigType, DependencyConfigType } from 'config/types';
 
 export class DependencyMachine extends BaseDependencyMachine {

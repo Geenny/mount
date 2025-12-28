@@ -1,5 +1,5 @@
-import { applicationConfigGet } from '../app/AppConfig';
 import { App } from '../app/App';
+import { AppConfig } from '../app/AppConfig';
 
 /**
  * Test suite for App lifecycle management.
@@ -13,8 +13,9 @@ describe('App Lifecycle', () => {
    * Setup: Create a new App instance before each test.
    */
   beforeEach(() => {
-    const applicationConfig = applicationConfigGet();
-    app = new App(applicationConfig);
+    const appConfig = new AppConfig();
+    const config = appConfig.configGet();
+    app = new App(config);
   });
 
   /**

@@ -1,9 +1,9 @@
 import { DependencyName } from 'core/dependency/enums';
 import { DependencyMachineConfigType } from './types';
-import { DependencyInit } from 'core/dependency/implementations/DependencyInit';
-import { DependencyDispatcher } from 'core/dependency/implementations/DependencyDispatcher';
-import { DependencyStats } from 'core/dependency/implementations/DependencyStats';
-import { DependencyStorage } from 'core/dependency/implementations/DependencyStorage';
+import { DependencyInit } from 'core/dependency/DependencyInit';
+import { DependencyDispatcher } from 'core/dependency/DependencyDispatcher';
+import { DependencyStats } from 'core/dependency/DependencyStats';
+import { DependencyStorage } from 'core/dependency/DependencyStorage';
 
 export const dependencyMachineConfig: DependencyMachineConfigType = {
     options: { },

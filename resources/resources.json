@@ -1,0 +1,6 @@
+{
+    "preloader": [
+        { "type": "json", "name": "layout", "url": "resources/layout/layout.json" },
+        { "type": "json", "name": "assets", "urls": { "default": "resources/assets/assets.json" } }
+    ]
+}
