@@ -12,8 +12,9 @@ export declare abstract class BaseDependencyMachine extends BaseWorker implement
     addAll(dependencyConfigs: DependencyConfigType[]): void;
     removeAll(): void;
     addByName(dependencyName: DependencyName): void;
-    getDependentDependencies(dependencyName: DependencyName): BaseDependency[];
-    getDependents(dependencyName: DependencyName): BaseDependency[];
+    getDependentDependencies(dependency: BaseDependency): BaseDependency[];
+    getDependentDependencyByName(dependencyName: DependencyName): BaseDependency;
+    protected getDependents(dependencyName: DependencyName): BaseDependency[];
     protected dependencyInit(dependency: BaseDependency): Promise<void>;
     protected dependencyInitAll(): Promise<void>;
     protected dependencyDestroy(dependency: BaseDependency): Promise<void>;

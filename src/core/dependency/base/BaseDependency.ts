@@ -37,7 +37,7 @@ export abstract class BaseDependency extends BaseWorker {
   }
 
   protected async initDependentDependencies(): Promise<void> {
-    const dependencies = this.machine.getDependentDependencies(this.name);
+    const dependencies = this.machine.getDependentDependencies(this);
     for (const dep of dependencies) {
       this.dependencyAddToList(dep);
     }

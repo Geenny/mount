@@ -8,11 +8,15 @@
     "version-patch": "standard-version --skip.changelog -- --release-as patch",
     "build": "npm run version-patch && webpack --mode production --config ./webpack/webpack.config.production.js",
     "dev": "webpack serve --mode development --config ./webpack/webpack.config.development.js",
-    "dev-open": "webpack serve --mode development --config ./webpack/webpack.config.development.js --open"
+    "dev-open": "webpack serve --mode development --config ./webpack/webpack.config.development.js --open",
+    "test": "jest"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "copy-webpack-plugin": "^13.0.1",
+    "jest": "^29.7.0",
     "standard-version": "^9.5.0",
+    "ts-jest": "^29.4.6",
     "ts-loader": "^9.5.1",
     "typescript": "^5.6.3",
     "webpack": "^5.95.0",

@@ -1,8 +1,9 @@
 import { BaseDependency } from '../base/BaseDependency';
 import { DependencyConfigType } from 'config/types';
+import { IBaseDependencyMachine } from 'core/machine/dependency/base/interface';
 
 export class DependencyInit extends BaseDependency {
-  constructor(config: DependencyConfigType, machine: any) {
+  constructor(config: DependencyConfigType, machine: IBaseDependencyMachine) {
     super(config, machine);
   }
 

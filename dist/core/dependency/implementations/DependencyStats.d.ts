@@ -1,6 +1,7 @@
-import { BaseDependency } from '../base/BaseDependency';
 import { DependencyConfigType } from 'config/types';
-export declare class DependencyStats extends BaseDependency {
-    constructor(config: DependencyConfigType, machine: any);
+import { IBaseDependencyMachine } from 'core/machine/dependency/base/interface';
+import { BaseDependencyDispatch } from '../base/BaseDependencyDispatch';
+export declare class DependencyStats extends BaseDependencyDispatch {
+    constructor(config: DependencyConfigType, machine: IBaseDependencyMachine);
     onStart(): Promise<void>;
 }

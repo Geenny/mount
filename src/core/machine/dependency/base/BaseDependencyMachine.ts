@@ -55,7 +55,7 @@ export abstract class BaseDependencyMachine extends BaseWorker implements IBaseD
     // this.add(config);
   }
 
-  public getDependentDependencies(dependencyName: DependencyName): BaseDependency[] {
+  getDependentDependencies(dependency: BaseDependency): BaseDependency[] {
     const result: BaseDependency[] = [];
     const visited = new Set<DependencyName>();
 
@@ -75,14 +75,19 @@ export abstract class BaseDependencyMachine extends BaseWorker implements IBaseD
       }
     };
 
-    collect(dependencyName);
+    collect(dependency.name);
     return result;
   }
 
-  getDependents(dependencyName: DependencyName): BaseDependency[] {
+  getDependentDependencyByName(dependencyName: DependencyName): BaseDependency {
+    const dependencyList = Array.from(this.dependencies.values());
+    return dependencyList.find(dep => dep.name === dependencyName)!;
+  }
+
+  protected getDependents(dependencyName: DependencyName): BaseDependency[] {
     const result: BaseDependency[] = [];
     for (const [name, dep] of this.dependencies) {
-      const deps = this.getDependentDependencies(name);
+      const deps = this.getDependentDependencies(dep);
       if (deps.some(d => d.name === dependencyName)) {
         result.push(dep);
       }
@@ -115,7 +120,7 @@ export abstract class BaseDependencyMachine extends BaseWorker implements IBaseD
   protected async dependencyStart(dependency: BaseDependency): Promise<void> {
     if (dependency.isWorking) return;
 
-    const deps = this.getDependentDependencies(dependency.name as DependencyName);
+    const deps = this.getDependentDependencies(dependency);
     if (deps.every(d => d.isWorking)) {
       await dependency.start();
     }
@@ -128,7 +133,7 @@ export abstract class BaseDependencyMachine extends BaseWorker implements IBaseD
       const readyToStart: BaseDependency[] = [];
       for (const dep of this.dependencies.values()) {
         if (!dep.isWorking) {
-          const deps = this.getDependentDependencies(dep.name as DependencyName);
+          const deps = this.getDependentDependencies(dep);
           if (deps.every(d => d.isWorking)) {
             readyToStart.push(dep);
           }
