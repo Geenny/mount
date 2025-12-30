@@ -8,7 +8,7 @@ import { IBaseDependencyMachine } from "core/machine/dependency/base/interface";
 // APPLICATION TYPES
 //
 
-type ApplicationConfigType = {
+type AppConfigType = {
     name: string,
     version: string,
     debug?: boolean,
@@ -49,7 +49,7 @@ type ServiceConfigType = DependencyDefaultConfigType & { name: string, instance:
 type ServiceMachineConfigType = DependencyDefaultConfigType & { childrens: ServiceConfigType[] };
 
 export {
-    ApplicationConfigType,
+    AppConfigType,
     DependencyMachineConfigType, DependencyConfigType, DependencyID,
     StateMachineConfigType,
     SystemMachineConfigType, SystemConfigType,

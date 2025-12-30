@@ -1,16 +1,26 @@
 import { BaseWorker } from 'core/base/BaseWorker';
 import { output } from 'utils/output/Output';
 import { DependencyMachine } from 'core/machine/dependency/DependencyMachine';
-import { ApplicationConfigType, DependencyMachineConfigType } from 'config/types';
+import { AppConfigType, DependencyMachineConfigType } from 'config/types';
 
 export class App extends BaseWorker {
   private dependencyMachine?: DependencyMachine;
 
-  constructor(config: ApplicationConfigType) {
+  constructor(config: AppConfigType) {
     super(config);
   }
 
+
+  //
+  // GETTERS
+  //
+
   get isDebug(): boolean { return this.config.debug === true; }
+
+
+  //
+  // LIFECYCLE METHODS
+  //
 
   protected async onInit(): Promise<void> {
     output.log(this, 'App initializing with config:', this.config);
@@ -58,7 +68,13 @@ export class App extends BaseWorker {
   //
 
   protected async dependencyInit(): Promise<void> {
-    const dependencyMachineConfig = this.config.configs?.dependencyMachineConfig as DependencyMachineConfigType
+    const dependencyMachineConfig = this.config.configs?.dependencyMachineConfig as DependencyMachineConfigType;
+
+    if (!dependencyMachineConfig) {
+      output.warn(this, 'No dependency machine config found!!!');
+      return;
+    }
+    
     this.dependencyMachine = new DependencyMachine(dependencyMachineConfig);
     await this.dependencyMachine.init();
   }

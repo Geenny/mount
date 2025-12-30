@@ -9,10 +9,10 @@ export const dependencyMachineConfig: DependencyMachineConfigType = {
     options: { },
     childrens: [
         {
-            name: DependencyName.DEPENDENCY_STATS,
-            dependentList: [DependencyName.DEPENDENCY_DISPATCHER],
+            name: DependencyName.DEPENDENCY_INIT,
+            dependentList: [ ],
             options: { },
-            instance: DependencyStats
+            instance: DependencyInit
         },
         {
             name: DependencyName.DEPENDENCY_DISPATCHER,
@@ -21,16 +21,16 @@ export const dependencyMachineConfig: DependencyMachineConfigType = {
             instance: DependencyDispatcher
         },
         {
+            name: DependencyName.DEPENDENCY_STATS,
+            dependentList: [DependencyName.DEPENDENCY_DISPATCHER],
+            options: { },
+            instance: DependencyStats
+        },
+        {
             name: DependencyName.DEPENDENCY_STORAGE,
             dependentList: [DependencyName.DEPENDENCY_DISPATCHER],
             options: { },
             instance: DependencyStorage
-        },
-        {
-            name: DependencyName.DEPENDENCY_INIT,
-            dependentList: [ ],
-            options: { },
-            instance: DependencyInit
         },
     ]
 };

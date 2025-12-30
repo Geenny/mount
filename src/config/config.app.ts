@@ -1,6 +1,6 @@
-import { ApplicationConfigType } from './types';
+import { AppConfigType } from './types';
 
-export const applicationConfig: ApplicationConfigType = {
+export const appConfig: AppConfigType = {
   name: 'Mount App',
   version: '1',
   debug: true,

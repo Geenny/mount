@@ -1,7 +1,7 @@
 export class Output {
     private styles: Record<string, string> = {
         App: 'color: green',
-        default: 'color: black'
+        default: 'color: orange'
     };
 
     log(caller: any, ...args: any[]): void {

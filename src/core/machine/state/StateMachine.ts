@@ -15,8 +15,8 @@ export class StateMachine extends BaseInit {
   private transitions = new Map<StateName, Map<string, StateName>>();
   public stateChanged$ = new Subject<{ from: StateName; to: StateName }>();
 
-  constructor(private config: StateMachineConfigType) {
-    super();
+  constructor(config: StateMachineConfigType) {
+    super(config);
   }
 
   async init(): Promise<void> {
