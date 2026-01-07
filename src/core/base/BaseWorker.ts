@@ -1,14 +1,9 @@
 import { BaseInit } from './BaseInit';
-import { ConfigType } from './types';
 import { output } from '../../utils/output/Output';
 
 export abstract class BaseWorker extends BaseInit {
   protected _isRunning = false;
   protected _isPaused = false;
-
-  constructor(config: ConfigType) {
-    super(config);
-  }
 
   public get isRunning(): boolean {
     return this._isRunning;

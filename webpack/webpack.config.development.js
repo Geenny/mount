@@ -3,7 +3,7 @@ const common = require('./webpack.config.common');
 
 module.exports = merge(common, {
   mode: 'development',
-  devtool: 'inline-source-map',
+  devtool: 'cheap-module-source-map',
   devServer: {
     static: {
       directory: require('path').join(__dirname, '/'),

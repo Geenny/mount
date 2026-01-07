@@ -52,6 +52,38 @@ export class Graph<T> {
     }
 
     /**
+     * Checks that every edge is bidirectional (undirected consistency)
+     * @return {boolean} true when each edge has a reverse edge
+     */
+    get isSymmetric(): boolean {
+        for ( const [ from, toList ] of this.#nodes ) {
+            for ( const to of toList ) {
+                const toNode = this.#nodes.get( to );
+                if ( !toNode || !toNode.includes( from ) ) return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns node count
+     * @return {number}
+     */
+    get size(): number {
+        return this.#nodes.size;
+    }
+
+    /**
+     * Returns total edge count (undirected, counted once)
+     * @return {number}
+     */
+    get edgeCount(): number {
+        let total = 0;
+        for ( const list of this.#nodes.values() ) total += list.length;
+        return total / 2;
+    }
+
+    /**
      * Verifies whether there is a direct connection between two nodes
      * @param {T} from - source node
      * @param {T} to - target node
@@ -84,6 +116,16 @@ export class Graph<T> {
     }
 
     /**
+     * Adds a single undirected edge
+     * @param {T} from
+     * @param {T} to
+     * @return {void}
+     */
+    addEdge( from: T, to: T ): void {
+        this.add( from, [ to ] );
+    }
+
+    /**
      * Bulk-adds multiple nodes and their links from a map
      * @param {Map<T, T[]>} nodes - map of node -> linked nodes
      * @return {void}
@@ -107,6 +149,58 @@ export class Graph<T> {
      */
     removeAll(): void {
         this.#nodes.clear();
+    }
+
+    /**
+     * Checks presence of node
+     * @param {T} node
+     * @return {boolean}
+     */
+    has(node: T): boolean {
+        return this.#nodes.has(node);
+    }
+
+    /**
+     * Returns neighbors (adjacent nodes) copy
+     * @param {T} node
+     * @return {T[]}
+     */
+    neighbors(node: T): T[] {
+        return [ ...(this.#nodes.get(node) ?? []) ];
+    }
+
+    /**
+     * Returns degree (neighbor count) for node
+     * @param {T} node
+     * @return {number}
+     */
+    degree(node: T): number {
+        return this.#nodes.get(node)?.length ?? 0;
+    }
+
+    /**
+     * Removes an undirected edge, keeps nodes intact
+     * @param {T} from
+     * @param {T} to
+     * @return {void}
+     */
+    removeEdge(from: T, to: T): void {
+        const a = this.#nodes.get(from);
+        const b = this.#nodes.get(to);
+        if (a) this.#nodes.set(from, a.filter(n => n !== to));
+        if (b) this.#nodes.set(to, b.filter(n => n !== from));
+    }
+
+    /**
+     * Returns a cloned adjacency map (deep copy of arrays)
+     * @return {Map<T, T[]>}
+     */
+    toMap(): Map<T, T[]> {
+        const clone = new Map<T, T[]>();
+        for ( const [k, v] of this.#nodes ) {
+            clone.set(k, [...v]);
+        }
+        return clone;
     }
 
     /**

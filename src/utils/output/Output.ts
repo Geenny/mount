@@ -1,10 +1,10 @@
 
-import { STYLE_APPLICATION, STYLE_DEFAULT, STYLE_DEPENDENCY } from "./OutputStyles";
+import { STYLE_COMPONENTS, STYLE_DEFAULT, STYLE_COMPONENT } from "./OutputStyles";
 
 export class Output {
     private styleByCallerGet(caller: any): string {
-        if ( caller && caller.constructor.name === 'App' ) return STYLE_APPLICATION;
-        if ( caller && caller.constructor.name.indexOf('Dependency') === 0 ) return STYLE_DEPENDENCY;
+        // if ( caller && caller.constructor.name === 'Components' ) return STYLE_COMPONENTS;
+        // if ( caller && caller.constructor.name.indexOf('Component') >= 0 ) return STYLE_COMPONENT;
         return STYLE_DEFAULT;
     }
 

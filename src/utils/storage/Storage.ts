@@ -1,4 +1,4 @@
-export class Storage {
+class Storage {
     protected data: Map<string, any> = new Map();
 
     isData(name: string): boolean {
@@ -14,4 +14,6 @@ export class Storage {
     }
 }
 
-export const storage = new Storage();
+const storage = new Storage();
+
+export { storage, Storage };
