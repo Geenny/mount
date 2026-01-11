@@ -4,6 +4,7 @@ enum ComponentTypeName {
 };
 
 enum ComponentName {
+    NONE = 'NONE',
     ENTRY = 'ENTRY',
     STREAM = 'STREAM',
     SYSTEM = 'SYSTEM',

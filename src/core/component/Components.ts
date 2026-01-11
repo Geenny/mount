@@ -3,7 +3,8 @@ import { ComponentConfigType, ComponentStructType } from "./types";
 import { ComponentName } from "./enums";
 import { output } from "utils/index";
 import { Unique } from "utils/unique/Unique";
-import { Component } from "./Component";
+import { BaseComponent } from "core/base/construction/component/BaseComponent";
+import { BaseSubscription } from "core/base/construction/subscription/BaseSubscription";
 
 export class Components extends BaseWorker {
     protected uniqueIDGen: Unique = new Unique(1);
@@ -11,7 +12,7 @@ export class Components extends BaseWorker {
 
     protected componentConfigPrepareList: ComponentConfigType[] = [];
 
-    protected componentStructList: ComponentStructType[] = []; 
+    protected componentStructList: ComponentStructType[] = [];
 
     protected promiseInitStruct?: PromiseStructType;
     protected promiseStartStruct?: PromiseStructType;
@@ -57,7 +58,7 @@ export class Components extends BaseWorker {
     }
 
     protected componentStructCreateByConfig( config: ComponentConfigType ): ComponentStructType {
-        const ComponentClass = config.instance || Component;
+        const ComponentClass = config.instance || BaseComponent;
         const component = new ComponentClass();
 
         return { component, config };
@@ -72,6 +73,7 @@ export class Components extends BaseWorker {
         // Если нечего инициализировать или все готово
         if ( componentsToInit.length === 0 && this.componentConfigPrepareList.length === 0 ) {
             this.promiseInitStruct?.method.resolve();
+            this.promiseInitStruct = undefined;
             return;
         }
 
@@ -86,10 +88,9 @@ export class Components extends BaseWorker {
         if ( componentsToInit.length > 0 ) {
             for ( const config of componentsToInit ) {
                 await this.componentInit( config );
-                
             }
 
-            this.componentsRemoveByInit( componentsToInit );
+            this.componentsConfigPrepareRemoveByInit( componentsToInit );
         }
 
         await this.componentInitReadyCheck();
@@ -98,6 +99,8 @@ export class Components extends BaseWorker {
     protected async componentInit( config: ComponentConfigType ): Promise<void> {
         const componentStruct = this.componentStructCreateByConfig( config );
         const { component } = componentStruct;
+
+        this.componentSubscribeSet( componentStruct );
 
         await component.init( config );
         
@@ -117,10 +120,29 @@ export class Components extends BaseWorker {
         } );
     }
 
-    protected componentsRemoveByInit( componentsToInit: ComponentConfigType[] ): void {
+    protected componentsConfigPrepareRemoveByInit( componentsToInit: ComponentConfigType[] ): void {
         for ( const config of componentsToInit ) {
             this.componentConfigPrepareList = this.componentConfigPrepareList.filter( ( item ) => item !== config );
         }
+    }
+
+    protected componentSubscribeSet( componentStruct: ComponentStructType ): void {
+        const { component, config } = componentStruct;
+        const subscriptions = this.componentSubscribeSubscriptionsGet( config );
+        if ( subscriptions ) {
+            subscriptions.forEach( ( subscription ) => component.subscribe( subscription.name, subscription ) );
+        }
+    }
+
+    protected componentSubscribeSubscriptionsGet( config: ComponentConfigType ): BaseComponent[] | undefined {
+        const { dependent } = config;
+        if ( !dependent || dependent.length === 0 ) return undefined;
+
+        const subscriptions = this.componentStructList
+            .filter( ( componentStruct ) => dependent.find( ( name ) => componentStruct.component.name === name ) )
+            .map( ( componentStruct ) => componentStruct.component );
+        
+        return subscriptions;
     }
 
 
@@ -175,6 +197,7 @@ export class Components extends BaseWorker {
         // Если все запущены
         if ( componentsToStart.length === 0 ) {
             this.promiseStartStruct?.method.resolve();
+            this.promiseStartStruct = undefined;
             return;
         }
 
@@ -188,12 +211,12 @@ export class Components extends BaseWorker {
         await this.componentStartReadyCheck();
     }
 
-    protected async componentStart( component: Component ): Promise<void> {
+    protected async componentStart( component: BaseComponent ): Promise<void> {
         await component.start();
         output.log( component, `Component started: ${ component.name }` );
     }
 
-    protected componentsToStartGet(): Component[] {
+    protected componentsToStartGet(): BaseComponent[] {
         return this.componentStructList
             .filter( ( componentStruct ) => {
                 if ( componentStruct.component.isWorking ) return false;
@@ -224,14 +247,25 @@ export class Components extends BaseWorker {
 
         const processConfig = ( configRaw: ComponentConfigType, componentNameParent?: ComponentName ) => {
             const config = this.configPrepareFromRaw( configRaw );
+            const { unique } = config;
 
+            // Установка родителя в зависимые компоненты
             if ( componentNameParent ) {
                 if ( !config.dependent ) config.dependent = [];
-                config.dependent.push( componentNameParent );
+                if ( !config.dependent.includes( componentNameParent ) )
+                    config.dependent.push( componentNameParent );
             }
 
-            this.componentConfigPrepareList.push( config );
+            // Проверка на уникальность имени в списке подготовки и в уже созданных компонентах
+            const isReadyForCreate = unique &&
+                !this.componentConfigPrepareList.find( ( item ) => item.name === config.name ) &&
+                !this.componentStructList.find( ( item ) => item.component.name === config.name );
 
+            // Добавление в список на создание
+            if ( isReadyForCreate )
+                this.componentConfigPrepareList.push( config );
+
+            // Рекурсивная обработка дочерних компонентов
             if ( configRaw.components ) {
                 for ( const key in configRaw.components ) {
                     const childConfig = configRaw.components[ key ] as ComponentConfigType;

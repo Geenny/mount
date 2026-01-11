@@ -1,5 +1,5 @@
-import { Component } from "../Component";
+import { BaseComponent } from "core/base/construction/component/BaseComponent";
 
-export class ApplicationComponent extends Component {
+export class ApplicationComponent extends BaseComponent {
     
 }

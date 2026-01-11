@@ -1,6 +1,6 @@
 import { IndentifyConfigType } from "core/base";
 import { ComponentName, ComponentTypeName } from "./enums";
-import { Component } from "./Component";
+import { BaseComponent } from "core/base/construction/component/BaseComponent";
 
 type ComponentType = ComponentTypeName;
 
@@ -10,12 +10,12 @@ type ComponentConfigType = {
     type: ComponentType,
     unique?: boolean,
     syncStart?: boolean,
-    instance?: typeof Component, // instance?: new () => Component,
+    instance?: typeof BaseComponent, // instance?: new () => Component,
     components?: Record<string, ComponentConfigType>,
     dependent?: ComponentName[],
     params?: any
 };
 
-type ComponentStructType = { component: Component, config: ComponentConfigType }
+type ComponentStructType = { component: BaseComponent, config: ComponentConfigType }
 
 export { ComponentType, ComponentConfigType, ComponentStructType };
