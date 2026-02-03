@@ -39,21 +39,24 @@ export abstract class BaseWorker extends BaseInit {
     this._isPaused = false;
   }
 
-  async pause(): Promise<void> {
-    if (!this._isRunning) return;
-    // Логика паузы
-    this._isPaused = !this._isPaused;
+  async pause( paused: boolean | undefined = undefined ): Promise<void> {
+    if ( !this._isRunning ) return;
+    
+    let change = false;
 
+    if ( paused === undefined ) {
+      this._isPaused = !this._isPaused;
+      change = true;
+    } else if ( paused !== this._isPaused ) {
+      this._isPaused = paused;
+      change = true;
+    }
+    
+    if ( !change ) return;
+    
     if (this._isPaused) {
       await this.onPause();
     } else {
-      await this.onUnpause();
-    }
-  }
-
-  public async unpause(): Promise<void> {
-    if (this._isPaused) {
-      this._isPaused = false;
       await this.onUnpause();
     }
   }

@@ -4,12 +4,16 @@ import { BaseController } from "./BaseController";
 import { BaseModel } from "./BaseModel";
 import { BaseView } from "./BaseView";
 import { ComponentName } from "core/component/enums";
+import { IComponent, IController, IModel, IView } from "./interface";
+import { ComponentClassesType } from "./types";
+import { SubscribeEvent } from "../subscription/types";
+import { SubscribeEventEnum, SubscribeTypeEnum } from "../subscription/enum";
 
-export class BaseComponent extends BaseSubscription {
+export class BaseComponent extends BaseSubscription implements IComponent {
 
-    protected controller?: BaseController;
-    protected model?: BaseModel;
-    protected view?: BaseView;
+    protected controller?: IController;
+    protected model?: IModel;
+    protected view?: IView;
 
     get ID(): number | undefined {
         return this.config?.ID;
@@ -36,7 +40,7 @@ export class BaseComponent extends BaseSubscription {
     // MVC
     //
 
-    protected classes = {
+    protected classes: ComponentClassesType = {
         Controller: BaseController,
         Model: BaseModel,
         View: BaseView,
@@ -62,44 +66,57 @@ export class BaseComponent extends BaseSubscription {
 
 
     //
+    // SUBSCRIPTIONS
+    //
+
+    onEvent( event: SubscribeEvent, data?: any ): void {
+        this.controller?.onEvent( event, data );
+    }
+
+
+    //
     // LIFECYCLE
     //
 
-    async onInit(): Promise<void> {
+    protected async onInit(): Promise<void> {
         await super.onInit();
 
         this.createModel();
-        // this.createView();
+        this.createView();
         this.createController();
 
         this.controllerSet();
 
         await this.controller?.init( this.params );
+
+        this.message( SubscribeTypeEnum.SYSTEM, { instance: this, event: SubscribeEventEnum.START } );
     }
 
-    async onDestroy(): Promise<void> {
+    protected async onDestroy(): Promise<void> {
         await super.onDestroy();
         await this.controller?.destroy();
+
+        this.message( SubscribeTypeEnum.SYSTEM, { instance: this, event: SubscribeEventEnum.STOP } );
     }
 
-    async onStart(): Promise<void> {
+    protected async onStart(): Promise<void> {
         await super.onStart();
         await this.controller?.start();
     }
 
-    async onStop(): Promise<void> {
+    protected async onStop(): Promise<void> {
         await super.onStop();
         await this.controller?.stop();
     }
 
-    async onPause(): Promise<void> {
+    protected async onPause(): Promise<void> {
         await super.onPause();
-        await this.controller?.pause();
+        await this.controller?.pause( this.isPaused );
     }
 
-    async onUnpause(): Promise<void> {
+    protected async onUnpause(): Promise<void> {
         await super.onUnpause();
-        await this.controller?.unpause();
+        await this.controller?.pause( this.isPaused );
     }
 
 }

@@ -1,4 +1,5 @@
 const { merge } = require('webpack-merge');
+const webpack = require('webpack');
 const common = require('./webpack.config.common');
 
 module.exports = merge(common, {
@@ -11,4 +12,9 @@ module.exports = merge(common, {
     compress: true,
     port: 9000,
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      __DEV__: JSON.stringify(true),
+    }),
+  ],
 });

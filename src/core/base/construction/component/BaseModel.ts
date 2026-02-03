@@ -1,14 +1,14 @@
 import { ConfigType } from "core/base/types";
 import { BaseController } from "./BaseController";
-import { IControllerHolder } from "./interface";
+import { IController, IModel } from "./interface";
 
-export class BaseModel implements IControllerHolder {
+export class BaseModel implements IModel {
 
-    protected controller?: BaseController;
+    protected controller?: IController;
 
     config: ConfigType = { };
 
-    controllerSet( controller: BaseController ): void {
+    controllerSet( controller: IController ): void {
         this.controller = controller;
     }
 

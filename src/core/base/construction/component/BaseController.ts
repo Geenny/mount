@@ -1,15 +1,16 @@
 import { BaseWorker } from "core/base/BaseWorker";
-import { BaseComponent } from "./BaseComponent";
-import { BaseModel } from "./BaseModel";
-import { BaseView } from "./BaseView";
+import { IComponent, IController, IModel, IView } from "./interface";
+import { SubscribeEvent } from "../subscription/types";
+import { output } from "utils/index";
+import { SubscribeEventEnum, SubscribeTypeEnum } from "../subscription/enum";
 
-export class BaseController extends BaseWorker {
+export class BaseController extends BaseWorker implements IController {
 
-    readonly component: BaseComponent;
-    readonly model: BaseModel;
-    readonly view?: BaseView;
+    protected component: IComponent;
+    protected model: IModel;
+    protected view?: IView;
 
-    constructor( component: BaseComponent, model: BaseModel, view?: BaseView ) {
+    constructor( component: IComponent, model: IModel, view?: IView ) {
         super();
 
         // Component
@@ -36,6 +37,26 @@ export class BaseController extends BaseWorker {
 
     onViewEvent( eventName: string, ...args: any[] ): void {
 
+    }
+
+
+    //
+    // SUBSCRIPTIONS
+    //
+
+    emit( event: SubscribeEvent, data?: any ): void {
+        this.component.emit( event, data );
+    }
+
+    onEvent( event: SubscribeEvent, data?: any ): void {
+        output.log( this, `Event received: ${ event.toString() }`, data );
+    }
+
+    subscribe( event: SubscribeEvent, method: Function ): void {
+        // TODO: implement subscription logic
+
+        // const data = { instance: this.component, event: SubscribeEventEnum.START, source: { event, method } };
+        // this.component.message( SubscribeTypeEnum.SUBSCRIBE, data );
     }
 
 
@@ -68,12 +89,12 @@ export class BaseController extends BaseWorker {
 
     async onPause(): Promise<void> {
         await super.onPause();
-        await this.view?.pause();
+        await this.view?.pause( this.isPaused );
     }
 
     async onUnpause(): Promise<void> {
         await super.onUnpause();
-        await this.view?.unpause();
+        await this.view?.pause( this.isPaused );
     }
 
 }

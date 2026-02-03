@@ -4,6 +4,7 @@ import {
     ApplicationComponent,
     StreamComponent
 } from 'core/component';
+import { SystemComponent } from 'core/component/system/SystemComponent';
 
 export const componentsConfig: ComponentConfigType = {
     name: ComponentName.ENTRY,
@@ -32,6 +33,7 @@ export const componentsConfig: ComponentConfigType = {
             type: ComponentTypeName.SERVICE,
             dependent: [ ComponentName.STREAM ],
             unique: true,
+            instance: SystemComponent,
         },
         [ComponentName.NETWORK]: {
             name: ComponentName.NETWORK,

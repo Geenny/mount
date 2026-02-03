@@ -1,16 +1,15 @@
 import { BaseWorker } from "core/base/BaseWorker";
-import { BaseController } from './BaseController';
-import { IControllerHolder } from "./interface";
+import { IController, IView } from "./interface";
 
-export class BaseView extends BaseWorker implements IControllerHolder {
+export class BaseView extends BaseWorker implements IView {
 
-    protected controller?: BaseController;
+    protected controller?: IController;
 
-    controllerSet( controller: BaseController ): void {
+    controllerSet( controller: IController ): void {
         this.controller = controller;
     }
 
-    onEvent( eventName: string, ...args: any[] ): void {
+    protected onEvent( eventName: string, ...args: any[] ): void {
         this.controller?.onViewEvent( eventName, ...args );
     }
     

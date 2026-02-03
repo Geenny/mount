@@ -1,50 +1,18 @@
 import { BaseView } from "core/base/construction/component/BaseView";
 import { Subject } from "rxjs";
-import { output } from "utils/index";
+import { IStreamView } from "../interface";
+import { SubscribeEvent } from "core/base/construction/subscription/types";
+import { BaseSubscription } from "core/base/construction/subscription/BaseSubscription";
+import { StreamInstanceStruct } from "../types";
 
-const STREAM = 'STREAM';
+export class View extends BaseView implements IStreamView {
 
-export class View extends BaseView {
+    protected instances: BaseSubscription[] = [];
+    protected events: Map<SubscribeEvent, StreamInstanceStruct[]> = new Map();
 
-    private list: Map<string, Subject<any>> = new Map();
+    private list: Map<SubscribeEvent, Subject<any>> = new Map();
 
-    emit( type: string, data: any ): void {
-        if ( !this.isWorking ) {
-            output.error( this, 'StreamComponent: Is not working!!!' );
-            return;
-        }
-
-        if ( !type ) {
-            output.error( this, 'StreamComponent: Type is not defined' );
-            return;
-        }
-
-        const subject = this.subjectGet( type );
-
-        subject.next( data );
-    }
-
-    subscribe( type: string, callback: ( data: any ) => void ): void {
-        if ( !this.isWorking ) {
-            output.error( this, 'StreamComponent: Is not working!!!' );
-            return;
-        }
-
-        if ( !type ) {
-            output.error( this, 'StreamComponent: Type is not defined' );
-            return;
-        }
-
-        const subject = this.subjectGet( type );
-
-        subject.subscribe( {
-            next: ( data: any ) => {
-                callback( data );
-            }
-        } );
-    }
-
-    protected subjectGet( type: string ): Subject<any> {
+    subjectGet( type: SubscribeEvent ): Subject<any> {
         let subject = this.list.get( type );
 
         if ( !subject ) {
@@ -53,6 +21,52 @@ export class View extends BaseView {
         }
 
         return subject;
+    }
+
+
+    //
+    // INSTANCE TARGETs
+    //
+
+    isExist( instance: BaseSubscription ): boolean {
+        return this.instances.indexOf( instance ) >= 0;
+    }
+
+    add( instance: BaseSubscription ): void {
+        if ( this.instances.indexOf( instance ) >= 0 ) return;
+
+        this.instances.push( instance );
+    }
+
+    remove( instance: BaseSubscription ): void {
+        const index = this.instances.indexOf( instance );
+        if ( index < 0 ) return;
+
+        this.instances.splice( index, 1 );
+    }
+
+
+    byEventGet( event: SubscribeEvent ): StreamInstanceStruct[] {
+        const list = this.events.get( event ) || [];
+        return list;
+    }
+
+    subscribe( instance: BaseSubscription, event: SubscribeEvent, method: Function ): void {
+        let list = this.events.get( event );
+
+        if ( !list ) {
+            list = [];
+            this.events.set( event, list );
+        }
+
+        list.push( { instance, event, method } );
+    }
+    unsubscribe( instance: BaseSubscription, event: SubscribeEvent, method: Function ): void {
+        const list = this.events.get( event );
+        if ( !list ) return;
+
+        const filteredList = list.filter( item => item.instance !== instance || item.method !== method );
+        this.events.set( event, filteredList );
     }
 
 }
