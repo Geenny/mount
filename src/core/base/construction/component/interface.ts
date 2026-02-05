@@ -1,6 +1,6 @@
 import { IWorker } from "core/base/interface";
 import { ConfigType } from "core/base/types";
-import { SubscribeEvent, SubscribeMessageData } from "../subscription/types";
+import { SubscribeData, SubscribeEvent, SubscribeMessageData } from "../subscription/types";
 import { SubscribeActionEnum, SubscribeTypeEnum } from "../subscription/enum";
 
 interface IComponent {
@@ -17,8 +17,14 @@ interface IComponent {
 
     subscribe( event: SubscribeEvent, method: Function ): void;
     unsubscribe( event: SubscribeEvent, method: Function ): void;
-    emit( event: SubscribeEvent, data?: any ): void;
+    emit( event: SubscribeEvent, data?: SubscribeData ): void;
 
+    /**
+     * Messages between @BaseSubscription instances
+     * @param type {@SubscribeTypeEnum}
+     * @param action {@SubscribeActionEnum}
+     * @param data {@SubscribeMessageData}
+     */
     onMessage( type: SubscribeTypeEnum, action: SubscribeActionEnum, data: SubscribeMessageData ): void;
 
 }
@@ -29,9 +35,9 @@ interface IController extends IWorker {
 
     onViewEvent( eventName: string, ...args: any[] ): void;
 
-    emit( event: SubscribeEvent, data?: any ): void;
+    emit( event: SubscribeEvent, data?: SubscribeData ): void;
 
-    onEvent( event: SubscribeEvent, data?: any ): void;
+    onEvent( event: SubscribeEvent, data?: SubscribeData ): void;
 
 }
 

@@ -1,6 +1,6 @@
 import { BaseWorker } from "core/base/BaseWorker";
 import { IComponent, IController, IModel, IView } from "./interface";
-import { SubscribeEvent } from "../subscription/types";
+import { SubscribeData, SubscribeEvent } from "../subscription/types";
 import { output } from "utils/index";
 
 export class BaseController extends BaseWorker implements IController {
@@ -43,11 +43,11 @@ export class BaseController extends BaseWorker implements IController {
     // SUBSCRIPTIONS
     //
 
-    emit( event: SubscribeEvent, data?: any ): void {
+    emit( event: SubscribeEvent, data?: SubscribeData ): void {
         this.component.emit( event, data );
     }
 
-    onEvent( event: SubscribeEvent, data?: any ): void {
+    onEvent( event: SubscribeEvent, data?: SubscribeData ): void {
         output.log( this, `Event received: ${ event.toString() }`, data );
     }
 

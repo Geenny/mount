@@ -6,7 +6,7 @@ import { BaseView } from "./BaseView";
 import { ComponentName } from "core/component/enums";
 import { IComponent, IController, IModel, IView } from "./interface";
 import { ComponentClassesType } from "./types";
-import { SubscribeEvent } from "../subscription/types";
+import { SubscribeData, SubscribeEvent } from "../subscription/types";
 import { SubscribeActionEnum, SubscribeTypeEnum } from "../subscription/enum";
 
 export class BaseComponent extends BaseSubscription implements IComponent {
@@ -79,7 +79,7 @@ export class BaseComponent extends BaseSubscription implements IComponent {
         this.message( SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.STOP, messageData );
     }
 
-    emit( event: SubscribeEvent, data?: any ): void {
+    emit( event: SubscribeEvent, data?: SubscribeData ): void {
         const messageData = { instance: this, source: { event, data } };
         this.message( SubscribeTypeEnum.DATA, SubscribeActionEnum.START, messageData );
     }
