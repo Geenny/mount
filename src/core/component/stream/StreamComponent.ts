@@ -3,7 +3,7 @@ import { Controller } from "./mvc/Controller";
 import { Model } from "./mvc/Model";
 import { View } from "./mvc/View";
 import { IStreamComponent, IStreamController, IStreamModel, IStreamView } from "./interface";
-import { SubscribeEventEnum, SubscribeTypeEnum } from "core/base/construction/subscription/enum";
+import { SubscribeActionEnum, SubscribeTypeEnum } from "core/base/construction/subscription/enum";
 import { SubscribeEvent, SubscribeMessageData } from "core/base/construction/subscription/types";
 import { output } from "utils/index";
 
@@ -25,7 +25,7 @@ export class StreamComponent extends BaseComponent implements IStreamComponent {
     // MESSAGING
     //
 
-    onMessage( type: SubscribeTypeEnum, data: SubscribeMessageData ): void {
+    onMessage( type: SubscribeTypeEnum, action: SubscribeActionEnum, data: SubscribeMessageData ): void {
         if ( data.instance && data.instance === this ) {
             output.error( this, 'StreamComponent: Cannot send message to self!' );
             return;
@@ -34,58 +34,59 @@ export class StreamComponent extends BaseComponent implements IStreamComponent {
         switch ( type ) {
 
             case SubscribeTypeEnum.SYSTEM:
-                this.handleSystemMessage( data );
+                this.handleSystemMessage( action, data );
                 break;
             
             case SubscribeTypeEnum.SUBSCRIBE:
-                this.handleSubscribeMessage( data );
+                this.handleSubscribeMessage( action, data );
                 break;
 
             case SubscribeTypeEnum.DATA:
-                this.handleDataMessage( data );
+                this.handleDataMessage( action, data );
                 break;
             
         }
     }
 
-    protected handleSystemMessage( messageData: SubscribeMessageData ): void {
-        const { event, instance } = messageData;
+    protected handleSystemMessage( action: SubscribeActionEnum, messageData: SubscribeMessageData ): void {
+        const { instance } = messageData;
 
-        switch ( event ) {
+        switch ( action ) {
 
-            case SubscribeEventEnum.START:
+            case SubscribeActionEnum.START:
                 this.controller?.instanceAdd( instance );
                 break;
 
-            case SubscribeEventEnum.STOP:
+            case SubscribeActionEnum.STOP:
                 this.controller?.instanceRemove( instance );
                 break;
             
         }
     }
 
-    protected handleSubscribeMessage( messageData: SubscribeMessageData ): void {
-        const { instance, event, source } = messageData;
+    protected handleSubscribeMessage( action: SubscribeActionEnum, messageData: SubscribeMessageData ): void {
+        const { instance, source } = messageData;
 
-        const sourceEvent = source?.event;
-        const sourceMethod = source?.method;
+        if ( !source ) return;
+        const { event, method } = source;
 
-        if ( !sourceEvent || !sourceMethod ) return;
+        if ( !event || !method ) return;
+        if ( !this.controller ) return;
 
-        switch ( event ) {
+        switch ( action ) {
 
-            case SubscribeEventEnum.START:
-                this.controller?.subscribe( instance, sourceEvent, sourceMethod );
+            case SubscribeActionEnum.START:
+                this.controller.stream( instance, event, method );
                 break;
 
-            case SubscribeEventEnum.STOP:
-                this.controller?.unsubscribe( instance, sourceEvent, sourceMethod );
+            case SubscribeActionEnum.STOP:
+                this.controller.unstream( instance, event, method );
                 break;
             
         }
     }
 
-    protected handleDataMessage( messageData: SubscribeMessageData ): void {
+    protected handleDataMessage( action: SubscribeActionEnum, messageData: SubscribeMessageData ): void {
         const { source } = messageData;
 
         if ( !source ) return;

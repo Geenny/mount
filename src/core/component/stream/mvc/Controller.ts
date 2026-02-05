@@ -40,7 +40,7 @@ export class Controller extends BaseController implements IStreamController {
         } );
     }
 
-    subscribe( instance: BaseSubscription, event: SubscribeEvent, method: Function ): void {
+    stream( instance: BaseSubscription, event: SubscribeEvent, method: Function ): void {
         if ( !this.isWorking ) {
             output.error( this, 'StreamComponent: Is not working!!!' );
             return;
@@ -51,7 +51,7 @@ export class Controller extends BaseController implements IStreamController {
             return;
         }
 
-        if ( this.view.isExist( instance ) ) {
+        if ( !this.view.isExist( instance ) ) {
             output.error( this, 'StreamComponent: Instance is not registered!' );
             return;
         }
@@ -59,7 +59,7 @@ export class Controller extends BaseController implements IStreamController {
         this.view.subscribe( instance, event, method );
     }
 
-    unsubscribe(instance: BaseSubscription, event: SubscribeEvent, method: Function): void {
+    unstream(instance: BaseSubscription, event: SubscribeEvent, method: Function): void {
         this.view.unsubscribe( instance, event, method );
     }
 

@@ -7,7 +7,7 @@ import { ComponentName } from "core/component/enums";
 import { IComponent, IController, IModel, IView } from "./interface";
 import { ComponentClassesType } from "./types";
 import { SubscribeEvent } from "../subscription/types";
-import { SubscribeEventEnum, SubscribeTypeEnum } from "../subscription/enum";
+import { SubscribeActionEnum, SubscribeTypeEnum } from "../subscription/enum";
 
 export class BaseComponent extends BaseSubscription implements IComponent {
 
@@ -69,9 +69,21 @@ export class BaseComponent extends BaseSubscription implements IComponent {
     // SUBSCRIPTIONS
     //
 
-    onEvent( event: SubscribeEvent, data?: any ): void {
-        this.controller?.onEvent( event, data );
+    subscribe( event: SubscribeEvent, method: Function ): void {
+        const messageData = { instance: this, source: { event, method } };
+        this.message( SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, messageData );
     }
+
+    unsubscribe( event: SubscribeEvent, method: Function ): void {
+        const messageData = { instance: this, source: { event, method } };
+        this.message( SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.STOP, messageData );
+    }
+
+    emit( event: SubscribeEvent, data?: any ): void {
+        const messageData = { instance: this, source: { event, data } };
+        this.message( SubscribeTypeEnum.DATA, SubscribeActionEnum.START, messageData );
+    }
+
 
 
     //
@@ -89,14 +101,16 @@ export class BaseComponent extends BaseSubscription implements IComponent {
 
         await this.controller?.init( this.params );
 
-        this.message( SubscribeTypeEnum.SYSTEM, { instance: this, event: SubscribeEventEnum.START } );
+        const messageData = { instance: this };
+        this.message( SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, messageData );
     }
 
     protected async onDestroy(): Promise<void> {
         await super.onDestroy();
         await this.controller?.destroy();
 
-        this.message( SubscribeTypeEnum.SYSTEM, { instance: this, event: SubscribeEventEnum.STOP } );
+        const messageData = { instance: this };
+        this.message( SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.STOP, messageData );
     }
 
     protected async onStart(): Promise<void> {

@@ -2,7 +2,6 @@ import { BaseWorker } from "core/base/BaseWorker";
 import { IComponent, IController, IModel, IView } from "./interface";
 import { SubscribeEvent } from "../subscription/types";
 import { output } from "utils/index";
-import { SubscribeEventEnum, SubscribeTypeEnum } from "../subscription/enum";
 
 export class BaseController extends BaseWorker implements IController {
 
@@ -53,10 +52,11 @@ export class BaseController extends BaseWorker implements IController {
     }
 
     subscribe( event: SubscribeEvent, method: Function ): void {
-        // TODO: implement subscription logic
+        this.component.subscribe( event, method );
+    }
 
-        // const data = { instance: this.component, event: SubscribeEventEnum.START, source: { event, method } };
-        // this.component.message( SubscribeTypeEnum.SUBSCRIBE, data );
+    unsubscribe( event: SubscribeEvent, method: Function ): void {
+        this.component.unsubscribe( event, method );
     }
 
 

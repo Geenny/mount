@@ -22,7 +22,15 @@ export class Controller extends BaseController implements ISystemController {
 
         setInterval( () => {
             this.emit( 'start', { data: 'some data' } );
-        }, 5000 );
+        }, 1000 );
+
+        setInterval( () => {
+            this.emit( 'end', { data: 'some data' } );
+        }, 800 );
+
+        this.subscribe( 'start', ( data: any ) => {
+            console.log( 'SystemComponent: Start event received in Controller', data );
+        });
 
     }
 

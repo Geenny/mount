@@ -1,7 +1,7 @@
 import { IWorker } from "core/base/interface";
 import { ConfigType } from "core/base/types";
 import { SubscribeEvent, SubscribeMessageData } from "../subscription/types";
-import { SubscribeTypeEnum } from "../subscription/enum";
+import { SubscribeActionEnum, SubscribeTypeEnum } from "../subscription/enum";
 
 interface IComponent {
 
@@ -15,11 +15,11 @@ interface IComponent {
 
     params: ConfigType;
 
+    subscribe( event: SubscribeEvent, method: Function ): void;
+    unsubscribe( event: SubscribeEvent, method: Function ): void;
     emit( event: SubscribeEvent, data?: any ): void;
 
-    onEvent( event: SubscribeEvent, data?: any ): void;
-
-    onMessage( type: SubscribeTypeEnum, data: SubscribeMessageData ): void;
+    onMessage( type: SubscribeTypeEnum, action: SubscribeActionEnum, data: SubscribeMessageData ): void;
 
 }
 

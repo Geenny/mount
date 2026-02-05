@@ -5,9 +5,9 @@ enum SubscribeTypeEnum {
     ERROR
 };
 
-enum SubscribeEventEnum {
+enum SubscribeActionEnum {
     START,
     STOP
 };
 
-export { SubscribeTypeEnum, SubscribeEventEnum };
+export { SubscribeTypeEnum, SubscribeActionEnum };

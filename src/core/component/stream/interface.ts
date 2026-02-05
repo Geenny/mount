@@ -28,8 +28,8 @@ interface IStreamController extends IController {
 
     emit( event: SubscribeEvent, data: any ): void;
 
-    subscribe( instance: BaseSubscription, event: SubscribeEvent, method: Function ): void;
-    unsubscribe( instance: BaseSubscription, event: SubscribeEvent, method: Function ): void;
+    stream( instance: BaseSubscription, event: SubscribeEvent, method: Function ): void;
+    unstream( instance: BaseSubscription, event: SubscribeEvent, method: Function ): void;
 }
 
 export { IStreamComponent, IStreamModel, IStreamView, IStreamController };

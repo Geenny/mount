@@ -1,5 +1,5 @@
 import { BaseComponent } from "core/base/construction/component/BaseComponent";
-import { SubscribeEventEnum, SubscribeTypeEnum } from "core/base/construction/subscription/enum";
+import { SubscribeTypeEnum, SubscribeActionEnum } from "core/base/construction/subscription/enum";
 import { SubscribeEvent } from "core/base/construction/subscription/types";
 import { IComponent } from "core/base/construction/component/interface";
 import { ComponentName } from "../enums";
@@ -13,17 +13,27 @@ export class StreamSubscribeComponent extends BaseComponent implements IComponen
 
     // System
 
+    // emit( event: SubscribeEvent, data?: any ): void {
+    //     const messageData = { instance: this, event: SubscribeEventEnum.START, source: { event, data } };
+    //     this.message( SubscribeTypeEnum.DATA, messageData );
+    // }
     emit( event: SubscribeEvent, data: any ): void {
         if ( !this.streamComponent ) {
-            this.streamComponent = this.subscriptions.get( ComponentName.STREAM ) as StreamComponent;
-
-            if ( !this.streamComponent ) {
+            const component = this.subscriberMap.get( ComponentName.STREAM );
+            if ( !component ) {
                 output.error( this, 'StreamSubscribeComponent: Stream component not found in subscriptions!' );
                 return;
             }
+
+            if ( !( component instanceof StreamComponent ) ) {
+                output.error( this, 'StreamSubscribeComponent: Stream component is not an instance of StreamComponent!' );
+                return;
+            }
+
+            this.streamComponent = component as StreamComponent;
         }
 
-        this.streamComponent.onMessage( SubscribeTypeEnum.DATA, { instance: this, event: SubscribeEventEnum.START, source: { event, data } } );
+        this.streamComponent.onMessage( SubscribeTypeEnum.DATA, SubscribeActionEnum.START, { instance: this, source: { event, data } } );
     }
 
 }

@@ -130,7 +130,7 @@ export class Components extends BaseWorker {
         const { component, config } = componentStruct;
         const subscriptions = this.componentSubscribeSubscriptionsGet( config );
         if ( subscriptions ) {
-            subscriptions.forEach( ( subscription ) => component.subscribe( subscription.name, subscription ) );
+            subscriptions.forEach( ( subscription ) => component.subscriberSet( subscription.name, subscription ) );
         }
     }
 

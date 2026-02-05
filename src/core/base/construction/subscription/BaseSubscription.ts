@@ -1,34 +1,21 @@
 import { BaseWorker } from "core/base/BaseWorker";
 import { SubscribeEvent, SubscribeMessageData } from "./types";
 import { ComponentName } from "core/component/enums";
-import { SubscribeEventEnum, SubscribeTypeEnum } from "./enum";
+import { SubscribeActionEnum, SubscribeTypeEnum } from "./enum";
 
 export abstract class BaseSubscription extends BaseWorker {
 
-    subscriptions: Map<ComponentName, BaseSubscription> = new Map();
+    subscriberMap: Map<ComponentName, BaseSubscription> = new Map();
 
 
 
     //
-    // SUBSCRIPTION
+    // SUBSCRIBERS
     //
 
-    subscribe( componentName: ComponentName, subscription: BaseSubscription ): void {
-        this.subscriptions.set( componentName, subscription );
+    subscriberSet( componentName: ComponentName, subscription: BaseSubscription ): void {
+        this.subscriberMap.set( componentName, subscription );
     }
-
-    unsubscribe( componentName: ComponentName ): void {
-        this.subscriptions.delete( componentName );
-    }
-
-
-    //
-    // EVENTS
-    //
-
-    emit( event: SubscribeEvent, data?: any ): void { }
-
-    onEvent( event: SubscribeEvent, data?: any ): void { }
 
 
 
@@ -36,12 +23,12 @@ export abstract class BaseSubscription extends BaseWorker {
     // MESSAGING
     //
 
-    onMessage( type: SubscribeTypeEnum, data: SubscribeMessageData ): void {
+    onMessage( type: SubscribeTypeEnum, action: SubscribeActionEnum, data: SubscribeMessageData ): void {
         // Override in subclasses
     }
 
-    protected message( type: SubscribeTypeEnum, data: SubscribeMessageData ): void {
-        this.subscriptions.forEach( ( subscription ) => subscription.onMessage( type, data ) );
+    protected message( type: SubscribeTypeEnum, action: SubscribeActionEnum, data: SubscribeMessageData ): void {
+        this.subscriberMap.forEach( ( subscription ) => subscription.onMessage( type, action, data ) );
     }
 
 
@@ -53,7 +40,7 @@ export abstract class BaseSubscription extends BaseWorker {
     protected async onDestroy(): Promise<void> {
         await super.onDestroy();
 
-        this.subscriptions.clear();
+        this.subscriberMap.clear();
     }
 
 }
