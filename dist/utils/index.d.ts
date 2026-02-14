@@ -1,3 +1,4 @@
-export { output } from './output/Output';
-export { Utils } from './Utils';
-export { http } from './http/Http';
+import { storage } from './storage/Storage';
+import { output } from './output/Output';
+import { http } from './http/Http';
+export { storage, output, http };

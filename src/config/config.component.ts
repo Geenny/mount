@@ -1,12 +1,14 @@
-import { ComponentConfigType } from 'core/component/types';
+import { ComponentConfigType } from 'core/components/types';
 import { systemDataConfig } from './system/config.system.component';
-import { ComponentNameEnum, ComponentTypeEnum } from 'core/component/enums';
+import { networkParams } from './network/config.network.params';
+import { ComponentNameEnum, ComponentTypeEnum } from 'core/components/enums';
 import {
     ApplicationComponent,
     StreamComponent,
     SystemComponent,
+    NetworkComponent,
     CustomComponent
-} from 'core/component';
+} from 'core/components';
 
 export const componentsConfig: ComponentConfigType = {
     name: ComponentNameEnum.ENTRY,
@@ -43,7 +45,9 @@ export const componentsConfig: ComponentConfigType = {
             name: ComponentNameEnum.NETWORK,
             type: ComponentTypeEnum.SERVICE,
             unique: true,
-            dependent: [ ComponentNameEnum.STREAM ],
+            instance: NetworkComponent,
+            dependent: [ ComponentNameEnum.STREAM, ComponentNameEnum.SYSTEM ],
+            params: networkParams
         }
     }
 };

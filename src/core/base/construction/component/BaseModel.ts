@@ -1,12 +1,29 @@
 import { ConfigType } from "core/base/types";
-import { BaseController } from "./BaseController";
 import { IController, IModel } from "./interface";
 
 export class BaseModel implements IModel {
 
     protected controller?: IController;
+    
+    /**
+     * Reactive data storage with Proxy
+     * Automatically triggers onModelChange when properties are modified
+     */
+    protected data: Record< string, any >;
 
-    config: ConfigType = { };
+    constructor() {
+        this.data = new Proxy( {} as Record< string, any >, {
+            set: ( target: Record< string, any >, property, value ) => {
+                const key = String(property);
+                // Оптимизация: не записываем то же самое значение
+                if ( target[ key ] === value ) return true;
+                
+                target[ key ] = value;
+                this.controller?.onModelChange( key, value );
+                return true;
+            }
+        });
+    }
 
     controllerSet( controller: IController ): void {
         this.controller = controller;
@@ -15,26 +32,13 @@ export class BaseModel implements IModel {
     configurate( config?: ConfigType ): void {
         if ( config ) {
             for ( const key in config ) {
-                this.config[key] = config[key];
+                this.data[ key ] = config[ key ];
             }
         }
     }
 
     unconfigurate(): void {
-        this.config = { };
-    }
-
-    set( key: string, value: any ): void {
-        // Оптимизация: не записываем то же самое значение
-        if ( !key || this.config[ key ] === value) return;
-
-        this.config[ key ] = value;
-
-        this.controller?.onModelChange( key, value );
-    }
-
-    get( key: string ): any {
-        return this.config[ key ];
+        this.data = { };
     }
 
 }

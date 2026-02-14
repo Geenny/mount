@@ -1,24 +1,27 @@
-import { ComponentConfigType } from 'core/component/types';
-import { ComponentSystemNameEnum, ComponentTypeEnum } from 'core/component/enums';
-import { CustomComponent } from 'core/component/custom/CustomComponent';
+import { ComponentConfigType } from 'core/components/types';
+import { ComponentNameEnum, ComponentSystemNameEnum, ComponentTypeEnum } from 'core/components/enums';
+import { SystemVisibilityComponent, SystemResizeComponent, SystemKeyboardComponent } from 'core/components/system/components';
 
 export const systemDataConfig: Record<string, ComponentConfigType> = {
     [ComponentSystemNameEnum.VISIBILITY]: {
         name: ComponentSystemNameEnum.VISIBILITY,
         type: ComponentTypeEnum.SERVICE,
+        dependent: [ ComponentNameEnum.STREAM ],
         unique: true,
-        instance: CustomComponent
+        instance: SystemVisibilityComponent
     },
     [ComponentSystemNameEnum.RESIZE]: {
         name: ComponentSystemNameEnum.RESIZE,
         type: ComponentTypeEnum.SERVICE,
+        dependent: [ ComponentNameEnum.STREAM ],
         unique: true,
-        instance: CustomComponent
+        instance: SystemResizeComponent
     },
     [ComponentSystemNameEnum.KEYBOARD]: {
         name: ComponentSystemNameEnum.KEYBOARD,
         type: ComponentTypeEnum.SERVICE,
+        dependent: [ ComponentNameEnum.STREAM ],
         unique: true,
-        instance: CustomComponent
+        instance: SystemKeyboardComponent
     },
 };

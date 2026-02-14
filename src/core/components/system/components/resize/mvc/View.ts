@@ -1,0 +1,6 @@
+import { BaseView } from "core/base/construction/component/BaseView";
+import { ISystemResizeView } from "../interface";
+
+export class View extends BaseView implements ISystemResizeView {
+
+}

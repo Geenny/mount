@@ -1,5 +1,5 @@
 const SYSTEM_EVENT = {
-    VISIBLE: 'system.visible',
+    VISIBILITY: 'system.visibility',
     KEYBOARD: 'system.keyboard',
     RESIZE: 'system.resize'
 };

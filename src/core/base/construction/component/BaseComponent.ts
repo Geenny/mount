@@ -3,7 +3,6 @@ import { BaseSubscription } from "../subscription/BaseSubscription";
 import { BaseController } from "./BaseController";
 import { BaseModel } from "./BaseModel";
 import { BaseView } from "./BaseView";
-import { ComponentNameEnum } from "core/component/enums";
 import { IComponent, IController, IModel, IView } from "./interface";
 import { ComponentClassesType } from "./types";
 import { SubscribeData, SubscribeEvent } from "../subscription/types";
@@ -16,23 +15,23 @@ export class BaseComponent extends BaseSubscription implements IComponent {
     protected view?: IView;
 
     get ID(): number | undefined {
-        return this.config?.ID;
+        return this.config.ID;
     }
 
-    get name(): ComponentNameEnum {
-        return this.config?.name;
+    get name(): string {
+        return this.config.name;
     }
 
     get isUnique(): boolean {
-        return !!this.config?.unique;
+        return !!this.config.unique;
     }
 
     get isSyncStart(): boolean {
-        return !!this.config?.syncStart;
+        return !!this.config.syncStart;
     }
 
     get params(): ConfigType {
-        return this.config?.params || { };
+        return this.config.params || { };
     }
 
 
@@ -100,8 +99,8 @@ export class BaseComponent extends BaseSubscription implements IComponent {
         this.controllerSet();
 
         this.model?.configurate( this.params );
-        await this.view?.init();
-        await this.controller?.init();
+        await this.view?.init( {} );
+        await this.controller?.init( {} );
 
         const messageData = { instance: this };
         this.message( SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, messageData );

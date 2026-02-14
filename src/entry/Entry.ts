@@ -1,6 +1,6 @@
 import { componentsConfig } from "config/config.component";
-import { Components } from "core/component/Components";
-import { ComponentConfigType } from "core/component/types";
+import { Components } from "core/components/Components";
+import { ComponentConfigType } from "core/components/types";
 
 declare global {
   interface Window {

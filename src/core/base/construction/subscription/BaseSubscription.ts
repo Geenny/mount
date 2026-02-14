@@ -1,11 +1,11 @@
 import { BaseWorker } from "core/base/BaseWorker";
 import { SubscribeEvent, SubscribeMessageData } from "./types";
-import { ComponentNameEnum } from "core/component/enums";
+import { ComponentNameEnum } from "core/components/enums";
 import { SubscribeActionEnum, SubscribeTypeEnum } from "./enum";
 
 export abstract class BaseSubscription extends BaseWorker {
 
-    subscriberMap: Map<ComponentNameEnum, BaseSubscription> = new Map();
+    subscriberMap: Map<string, BaseSubscription> = new Map();
 
 
 
@@ -13,7 +13,7 @@ export abstract class BaseSubscription extends BaseWorker {
     // SUBSCRIBERS
     //
 
-    subscriberSet( componentName: ComponentNameEnum, subscription: BaseSubscription ): void {
+    subscriberSet( componentName: string, subscription: BaseSubscription ): void {
         this.subscriberMap.set( componentName, subscription );
     }
 

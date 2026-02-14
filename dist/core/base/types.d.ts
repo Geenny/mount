@@ -1,7 +1,14 @@
 type ConfigType = Record<string, any>;
 type IndentifyConfigType = {
-    ID: string;
+    ID?: number;
     name: string;
 };
-type ServiceConfigType = {};
-export { ConfigType, IndentifyConfigType, ServiceConfigType };
+type PromiseStructType = {
+    promise: Promise<any>;
+    method: PromiseMethodType;
+};
+type PromiseMethodType = {
+    resolve: () => void;
+    reject?: (error: any) => void;
+};
+export { ConfigType, IndentifyConfigType, PromiseStructType, PromiseMethodType };

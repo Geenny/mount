@@ -43,17 +43,11 @@ interface IController extends IWorker {
 
 interface IModel {
 
-    config: ConfigType;
-
     controllerSet( controller: IController ): void;
 
     configurate( config?: ConfigType ): void;
     
     unconfigurate(): void;
-
-    set ( key: string, value: any ): void;
-
-    get ( key: string ): any;
 
 }
 
