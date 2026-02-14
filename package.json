@@ -1,6 +1,6 @@
 {
   "name": "mount",
-  "version": "0.0.88",
+  "version": "0.0.89",
   "description": "Modular engine",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
