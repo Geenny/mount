@@ -13,7 +13,7 @@ export abstract class BaseInit extends BaseConfig {
     return !this._isInit;
   }
 
-  async init( config: ConfigType ): Promise<void> {
+  async init( config?: ConfigType ): Promise<void> {
     if ( this.isInit ) {
       await this.destroy();
       this._isInit = false;
@@ -25,13 +25,13 @@ export abstract class BaseInit extends BaseConfig {
       await this.onInit();
       this._isInit = true;
     } else {
-      output.error(this, 'Configuration not approved:', this.config);
+      output.error( this, 'Configuration not approved:', this.config );
     }
   }
 
   async destroy(): Promise<void> {
     if ( !this.isInit ) {
-      output.warn(this, 'Cannot destroy: not initialized');
+      output.warn( this, 'Cannot destroy: not initialized' );
       return;
     }
     

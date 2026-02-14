@@ -3,7 +3,7 @@ import { BaseSubscription } from "../subscription/BaseSubscription";
 import { BaseController } from "./BaseController";
 import { BaseModel } from "./BaseModel";
 import { BaseView } from "./BaseView";
-import { ComponentName } from "core/component/enums";
+import { ComponentNameEnum } from "core/component/enums";
 import { IComponent, IController, IModel, IView } from "./interface";
 import { ComponentClassesType } from "./types";
 import { SubscribeData, SubscribeEvent } from "../subscription/types";
@@ -19,7 +19,7 @@ export class BaseComponent extends BaseSubscription implements IComponent {
         return this.config?.ID;
     }
 
-    get name(): ComponentName {
+    get name(): ComponentNameEnum {
         return this.config?.name;
     }
 
@@ -99,7 +99,9 @@ export class BaseComponent extends BaseSubscription implements IComponent {
 
         this.controllerSet();
 
-        await this.controller?.init( this.params );
+        this.model?.configurate( this.params );
+        await this.view?.init();
+        await this.controller?.init();
 
         const messageData = { instance: this };
         this.message( SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, messageData );
@@ -108,6 +110,7 @@ export class BaseComponent extends BaseSubscription implements IComponent {
     protected async onDestroy(): Promise<void> {
         await super.onDestroy();
         await this.controller?.destroy();
+        await this.view?.destroy();
 
         const messageData = { instance: this };
         this.message( SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.STOP, messageData );
@@ -115,21 +118,25 @@ export class BaseComponent extends BaseSubscription implements IComponent {
 
     protected async onStart(): Promise<void> {
         await super.onStart();
+        await this.view?.start();
         await this.controller?.start();
     }
 
     protected async onStop(): Promise<void> {
         await super.onStop();
+        await this.view?.stop();
         await this.controller?.stop();
     }
 
     protected async onPause(): Promise<void> {
         await super.onPause();
+        await this.view?.pause( this.isPaused );
         await this.controller?.pause( this.isPaused );
     }
 
     protected async onUnpause(): Promise<void> {
         await super.onUnpause();
+        await this.view?.pause( this.isPaused );
         await this.controller?.pause( this.isPaused );
     }
 

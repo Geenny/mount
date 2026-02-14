@@ -20,6 +20,10 @@ export class BaseModel implements IModel {
         }
     }
 
+    unconfigurate(): void {
+        this.config = { };
+    }
+
     set( key: string, value: any ): void {
         // Оптимизация: не записываем то же самое значение
         if ( !key || this.config[ key ] === value) return;

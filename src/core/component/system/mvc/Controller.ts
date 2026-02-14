@@ -21,20 +21,9 @@ export class Controller extends BaseController implements ISystemController {
 
     async onStart(): Promise<void> {
 
-        // setInterval( () => {
-        //     this.emit( 'start', { data: 'some data' } );
-        // }, 1000 );
-
-        // setInterval( () => {
-        //     this.emit( 'end', { data: 'some data' } );
-        // }, 800 );
-
-        // this.subscribe( 'start', ( data: any ) => {
-        //     console.log( 'SystemComponent: Start event received in Controller', data );
-        // });
-
         this.systemVisible();
         this.systemKeyboard();
+        this.systemResize();
 
     }
 
@@ -77,6 +66,21 @@ export class Controller extends BaseController implements ISystemController {
                 isAlt: event.altKey
             };
             this.emit( SYSTEM_EVENT.KEYBOARD, data );
+        } );
+    }
+
+
+    //
+    // RESIZE
+    //
+
+    protected systemResize(): void {
+        window.addEventListener( 'resize', () => {
+            const data = {
+                width: window.innerWidth,
+                height: window.innerHeight
+            };
+            this.emit( SYSTEM_EVENT.RESIZE, data );
         } );
     }
 

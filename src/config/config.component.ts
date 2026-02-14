@@ -1,45 +1,49 @@
-import { ComponentName, ComponentTypeName } from 'core/component/enums';
-import { ComponentConfigType,  } from 'core/component/types';
+import { ComponentConfigType } from 'core/component/types';
+import { systemDataConfig } from './system/config.system.component';
+import { ComponentNameEnum, ComponentTypeEnum } from 'core/component/enums';
 import {
     ApplicationComponent,
-    StreamComponent
+    StreamComponent,
+    SystemComponent,
+    CustomComponent
 } from 'core/component';
-import { SystemComponent } from 'core/component/system/SystemComponent';
 
 export const componentsConfig: ComponentConfigType = {
-    name: ComponentName.ENTRY,
-    type: ComponentTypeName.COMPONENT,
+    name: ComponentNameEnum.ENTRY,
+    type: ComponentTypeEnum.COMPONENT,
+    instance: CustomComponent,
     unique: true,
     components: {
-        [ComponentName.APPLICATION]: {
-            name: ComponentName.APPLICATION,
-            type: ComponentTypeName.COMPONENT,
+        [ComponentNameEnum.APPLICATION]: {
+            name: ComponentNameEnum.APPLICATION,
+            type: ComponentTypeEnum.COMPONENT,
             unique: true,
             instance: ApplicationComponent,
-            dependent: [ ComponentName.STREAM ],
+            dependent: [ ComponentNameEnum.STREAM ],
             params: {
                 debug: true,
                 version: '0.1.0',
             }
         },
-        [ComponentName.STREAM]: {
-            name: ComponentName.STREAM,
-            type: ComponentTypeName.SERVICE,
+        [ComponentNameEnum.STREAM]: {
+            name: ComponentNameEnum.STREAM,
+            type: ComponentTypeEnum.SERVICE,
             unique: true,
             instance: StreamComponent,
         },
-        [ComponentName.SYSTEM]: {
-            name: ComponentName.SYSTEM,
-            type: ComponentTypeName.SERVICE,
-            dependent: [ ComponentName.STREAM ],
+        [ComponentNameEnum.SYSTEM]: {
+            name: ComponentNameEnum.SYSTEM,
+            type: ComponentTypeEnum.SERVICE,
+            dependent: [ ComponentNameEnum.STREAM ],
             unique: true,
             instance: SystemComponent,
+            components: systemDataConfig
         },
-        [ComponentName.NETWORK]: {
-            name: ComponentName.NETWORK,
-            type: ComponentTypeName.COMPONENT,
+        [ComponentNameEnum.NETWORK]: {
+            name: ComponentNameEnum.NETWORK,
+            type: ComponentTypeEnum.SERVICE,
             unique: true,
-            dependent: [ ComponentName.STREAM ],
+            dependent: [ ComponentNameEnum.STREAM ],
         }
     }
 };

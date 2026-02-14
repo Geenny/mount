@@ -59,42 +59,4 @@ export class BaseController extends BaseWorker implements IController {
         this.component.unsubscribe( event, method );
     }
 
-
-    //
-    // LIFECYCLE
-    //
-
-    async onInit(): Promise<void> {
-        await super.onInit();
-
-        this.model.configurate( this.config! );
-
-        await this.view?.init( this.model.config );
-    }
-
-    async onDestroy(): Promise<void> {
-        await super.onDestroy();
-        await this.view?.destroy();
-    }
-
-    async onStart(): Promise<void> {
-        await super.onStart();
-        await this.view?.start();
-    }
-
-    async onStop(): Promise<void> {
-        await super.onStop();
-        await this.view?.stop();
-    }
-
-    async onPause(): Promise<void> {
-        await super.onPause();
-        await this.view?.pause( this.isPaused );
-    }
-
-    async onUnpause(): Promise<void> {
-        await super.onUnpause();
-        await this.view?.pause( this.isPaused );
-    }
-
 }

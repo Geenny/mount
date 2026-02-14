@@ -1,7 +1,7 @@
 
 import { STYLE_COMPONENTS, STYLE_DEFAULT, STYLE_COMPONENT } from "./OutputStyles";
 
-export class Output {
+class Output {
     private styleByCallerGet(caller: any): string {
         // if ( caller && caller.constructor.name === 'Components' ) return STYLE_COMPONENTS;
         // if ( caller && caller.constructor.name.indexOf('Component') >= 0 ) return STYLE_COMPONENT;
@@ -24,4 +24,6 @@ export class Output {
     }
 }
 
-export const output = new Output();
+const output = new Output();
+
+export { output, Output };

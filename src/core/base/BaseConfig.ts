@@ -1,5 +1,7 @@
 import { ConfigType } from './types';
 
+const CONFIG_DEFAULT: ConfigType = { };
+
 export abstract class BaseConfig {
     protected config?: ConfigType;
 
@@ -11,8 +13,8 @@ export abstract class BaseConfig {
         return this.isConfig;
     }
 
-    configure(config: ConfigType): void {
-        this.config = config;
+    configure( config: ConfigType | undefined ): void {
+        this.config = config || CONFIG_DEFAULT;
     }
 
     unconfigure(): void {

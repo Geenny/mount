@@ -1,8 +1,9 @@
 import { IndentifyConfigType } from "core/base";
-import { ComponentName, ComponentTypeName } from "./enums";
+import { ComponentNameEnum, ComponentSystemNameEnum, ComponentTypeEnum } from "./enums";
 import { BaseComponent } from "core/base/construction/component/BaseComponent";
 
-type ComponentType = ComponentTypeName;
+type ComponentName = string;
+type ComponentType = ComponentTypeEnum;
 
 type ComponentConfigType = {
     ID?: number,
@@ -11,11 +12,16 @@ type ComponentConfigType = {
     unique?: boolean,
     syncStart?: boolean,
     instance?: typeof BaseComponent, // instance?: new () => Component,
-    components?: Record<string, ComponentConfigType>,
+    components?: Record<ComponentName, ComponentConfigType>,
     dependent?: ComponentName[],
     params?: any
 };
 
 type ComponentStructType = { component: BaseComponent, config: ComponentConfigType }
 
-export { ComponentType, ComponentConfigType, ComponentStructType };
+export {
+    ComponentName,
+    ComponentType,
+    ComponentConfigType,
+    ComponentStructType
+};

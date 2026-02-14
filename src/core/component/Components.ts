@@ -1,10 +1,10 @@
 import { BaseWorker, PromiseStructType, PromiseMethodType } from "core/base";
-import { ComponentConfigType, ComponentStructType } from "./types";
-import { ComponentName } from "./enums";
+import { ComponentConfigType, ComponentStructType, ComponentName } from "./types";
 import { output } from "utils/index";
 import { Unique } from "utils/unique/Unique";
 import { BaseComponent } from "core/base/construction/component/BaseComponent";
 import { BaseSubscription } from "core/base/construction/subscription/BaseSubscription";
+import { ComponentNameEnum } from "./enums";
 
 export class Components extends BaseWorker {
     protected uniqueIDGen: Unique = new Unique(1);

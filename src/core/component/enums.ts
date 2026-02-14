@@ -1,21 +1,31 @@
-enum ComponentTypeName {
+enum ComponentTypeEnum {
     COMPONENT = 'COMPONENT',
     SERVICE = 'SERVICE',
 };
 
-enum ComponentName {
+enum ComponentNameEnum {
     NONE = 'NONE',
     ENTRY = 'ENTRY',
-    STREAM = 'STREAM',
-    SYSTEM = 'SYSTEM',
-    APPLICATION = 'APPLICATION',
-    NETWORK = 'NETWORK',
-    LOADER = 'LOADER',
-    RESOURCES = 'RESOURCES',
-    LAYOUT = 'LAYOUT',
-    RENDERER = 'RENDERER',
+    STREAM = 'STREAM',                      // Provide exchange data between components
+    SYSTEM = 'SYSTEM',                      // Provide system changes like, resize, visibility, keyboard, etc
+    APPLICATION = 'APPLICATION',            // Provide application changes like, route, state, etc
+    NETWORK = 'NETWORK',                    // Network
+    LOADER = 'LOADER',                      // Loader of application resources
+    RESOURCES = 'RESOURCES',                // Parse, save and struct resources of application
+    DISPLAY = 'DISPLAY',                    // Provide display for components (access to DOM, canvas, some div's, etc)
+    LAYOUT = 'LAYOUT',                      // Get posibility to create and manage layouts
+    RENDERER = 'RENDERER',                  // 
+};
 
-    // START = 'START',
-}
+enum ComponentSystemNameEnum {
+    VISIBILITY = 'VISIBILITY',
+    RESIZE = 'RESIZE',
+    KEYBOARD = 'KEYBOARD',
+    MOUSE = 'MOUSE',
+};
 
-export { ComponentTypeName, ComponentName };
+export {
+    ComponentTypeEnum,
+    ComponentNameEnum,
+    ComponentSystemNameEnum
+};

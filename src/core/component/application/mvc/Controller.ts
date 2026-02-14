@@ -37,6 +37,10 @@ export class Controller extends BaseController implements IApplicationController
             console.log( 'VISIBLE', data );
         });
 
+        this.subscribe( SYSTEM_EVENT.RESIZE, ( data: any ) => {
+            console.log( 'RESIZE', data );
+        });
+
     }
 
 }

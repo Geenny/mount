@@ -14,7 +14,7 @@ interface IWorker {
 
   readonly isRunning: boolean;
 
-  init( config: ConfigType ): Promise<void>;
+  init( config?: ConfigType ): Promise<void>;
 
   destroy(): Promise<void>;
 
