@@ -24,8 +24,14 @@ enum ComponentSystemNameEnum {
     MOUSE = 'MOUSE',
 };
 
+enum ComponentNetworkNameEnum {
+    CONNECTOR_REQUEST = 'CONNECTOR_REQUEST',
+    CONNECTOR_SOCKET = 'CONNECTOR_SOCKET',
+};
+
 export {
     ComponentTypeEnum,
     ComponentNameEnum,
-    ComponentSystemNameEnum
+    ComponentSystemNameEnum,
+    ComponentNetworkNameEnum
 };

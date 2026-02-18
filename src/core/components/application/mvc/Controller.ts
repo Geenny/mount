@@ -41,6 +41,8 @@ export class Controller extends BaseController implements IApplicationController
             console.log( 'RESIZE', data );
         });
 
+        this.emit( NETWORK_EVENT.REQUEST, { serverId: }
+
     }
 
 }

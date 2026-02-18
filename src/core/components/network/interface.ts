@@ -1,7 +1,6 @@
 import { IComponent, IController, IModel, IView } from "core/base/construction/component/interface";
 import { Storage } from "utils/storage/Storage";
-import { NetworkConnectorComponent } from "./components/connector/NetworkConnectorComponent";
-import { NetworkConnectionRequest, NetworkServerConfig, NetworkStatsType } from "./types";
+import { NetworkConnectionRequest, NetworkStatsType } from "./types";
 
 /**
  * Network component interface
@@ -14,9 +13,6 @@ interface INetworkComponent extends IComponent {
  * Network model interface
  */
 interface INetworkModel extends IModel {
-    // Connectors map (serverId -> connector)
-    connectors: Map< string, NetworkConnectorComponent >;
-    
     // Request queues (serverId -> queue)
     requestQueues: Map< string, NetworkConnectionRequest[] >;
     
@@ -28,12 +24,6 @@ interface INetworkModel extends IModel {
     
     // Statistics
     stats: NetworkStatsType;
-    
-    // Helper methods
-    getConnector( serverId: string ): NetworkConnectorComponent | undefined;
-    getQueue( serverId: string ): NetworkConnectionRequest[];
-    getCache( serverId: string ): Storage | undefined;
-    updateStats(): void;
 }
 
 /**

@@ -1,71 +1,70 @@
 import { BaseController } from "core/base/construction/component/BaseController";
 import { INetworkComponent, INetworkController, INetworkModel, INetworkView } from "../interface";
+import { NetworkConnectionRequest, NetworkResponseType, NetworkErrorType } from "../types";
 /**
  * Network component controller
+ * Manages request queues, caching, and routing to connector components
  */
 export declare class Controller extends BaseController implements INetworkController {
     protected component: INetworkComponent;
     protected model: INetworkModel;
     protected view: INetworkView;
-    private params;
     constructor(component: INetworkComponent, model: INetworkModel, view: INetworkView);
-    /**
-     * Initialize network component
-     * Creates connectors and performs health checks
-     */
-    onInit(): Promise<void>;
     /**
      * Start network component
      * Subscribe to network requests from application
      */
     onStart(): Promise<void>;
     /**
-     * Stop network component
-     * Disconnect all connectors
+     * Initialize caches for connectors
      */
-    onStop(): Promise<void>;
+    protected initializeCaches(): void;
     /**
-     * Create connector for server
+     * Subscribe to network events
      */
-    private createConnector;
-    /**
-     * Perform blocking health check
-     */
-    private healthCheckBlocking;
+    protected subscribeToNetworkEvents(): void;
     /**
      * Handle incoming network request
      */
-    private onRequest;
+    protected onRequest(requestConfig: any): void;
+    /**
+     * Handle response from connector
+     */
+    protected onResponse(response: NetworkResponseType): void;
+    /**
+     * Handle error from connector
+     */
+    protected onError(error: NetworkErrorType): void;
     /**
      * Check if request result is in cache
      */
-    private checkCache;
-    /**
-     * Build cache key from request config
-     */
-    private buildCacheKey;
+    protected checkCache(request: NetworkConnectionRequest): boolean;
     /**
      * Add request to queue (sorted by priority)
      */
-    private addToQueue;
+    protected addToQueue(serverId: string, request: NetworkConnectionRequest): void;
     /**
      * Process request queue for server
      */
-    private processQueue;
-    /**
-     * Execute network request
-     */
-    private executeRequest;
+    protected processQueue(serverId: string): void;
     /**
      * Check if request should be retried
      */
-    private shouldRetry;
+    protected shouldRetry(request: NetworkConnectionRequest): boolean;
     /**
      * Save response to cache
      */
-    private saveToCache;
+    protected saveToCache(request: NetworkConnectionRequest, response: NetworkResponseType): void;
+    /**
+     * Build cache key from request config
+     */
+    protected buildCacheKey(config: any): string;
     /**
      * Generate unique request ID
      */
-    private generateRequestId;
+    protected generateRequestId(): string;
+    /**
+     * Model change handler
+     */
+    onModelChange(key: string, value: any): void;
 }

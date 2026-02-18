@@ -1,6 +1,6 @@
-import { 
-    NetworkServerConfig 
-} from "core/components/network/types";
+import { ComponentConfigType } from 'core/components/types';
+import { ComponentNetworkNameEnum, ComponentTypeEnum, ComponentNameEnum } from 'core/components/enums';
+import { NetworkConnectorRequestComponent, NetworkConnectorSocketComponent } from 'core/components/network/components';
 import { 
     NetworkConnectionType,
     NetworkRequestMethod,
@@ -8,18 +8,22 @@ import {
 } from "core/components/network/enums";
 
 /**
- * Network component params configuration
- * Define all servers and connection settings here
+ * Network connector components configuration
+ * Each connector is a separate component with its own params
  */
-export const networkParams = {
-    servers: [
-        // Example HTTP server with health check
-        {
+export const networkComponentsConfig: Record< string, ComponentConfigType > = {
+    [ ComponentNetworkNameEnum.CONNECTOR_REQUEST ]: {
+        name: ComponentNetworkNameEnum.CONNECTOR_REQUEST,
+        type: ComponentTypeEnum.SERVICE,
+        dependent: [ ComponentNameEnum.STREAM ],
+        unique: true,
+        instance: NetworkConnectorRequestComponent,
+        params: {
             id: 'api-main',
-            host: 'https://api.example.com',
+            host: 'http://localhost:3001',
             type: NetworkConnectionType.HTTP,
             
-            // Health check on init
+            // Health check on init (blocks init until connected)
             healthCheck: {
                 serverId: 'api-main',
                 endpoint: '/health',
@@ -51,12 +55,18 @@ export const networkParams = {
             headers: {
                 'Content-Type': 'application/json'
             }
-        },
-        
-        // Example WebSocket server
-        {
+        }
+    },
+    
+    [ ComponentNetworkNameEnum.CONNECTOR_SOCKET ]: {
+        name: ComponentNetworkNameEnum.CONNECTOR_SOCKET,
+        type: ComponentTypeEnum.SERVICE,
+        dependent: [ ComponentNameEnum.STREAM ],
+        unique: true,
+        instance: NetworkConnectorSocketComponent,
+        params: {
             id: 'ws-notifications',
-            host: 'wss://ws.example.com',
+            host: 'ws://localhost:3002',
             type: NetworkConnectionType.WEBSOCKET,
             
             // Retry settings (infinite retries for WebSocket)
@@ -68,22 +78,6 @@ export const networkParams = {
             protocols: [ 'v1.notification.protocol' ],
             reconnectOnClose: true,
             heartbeatInterval: 30000 // 30 seconds
-        },
-        
-        // Example local development server
-        {
-            id: 'api-dev',
-            host: 'http://localhost:3000',
-            type: NetworkConnectionType.HTTP,
-            
-            retry: 1,
-            retryDelay: 500,
-            timeout: 10000,
-            maxConcurrent: 10,
-            
-            cache: {
-                enabled: false
-            }
         }
-    ] as NetworkServerConfig[]
+    }
 };

@@ -21,4 +21,8 @@ declare enum ComponentSystemNameEnum {
     KEYBOARD = "KEYBOARD",
     MOUSE = "MOUSE"
 }
-export { ComponentTypeEnum, ComponentNameEnum, ComponentSystemNameEnum };
+declare enum ComponentNetworkNameEnum {
+    CONNECTOR_REQUEST = "CONNECTOR_REQUEST",
+    CONNECTOR_SOCKET = "CONNECTOR_SOCKET"
+}
+export { ComponentTypeEnum, ComponentNameEnum, ComponentSystemNameEnum, ComponentNetworkNameEnum };

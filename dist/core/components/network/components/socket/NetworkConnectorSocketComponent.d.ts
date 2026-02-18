@@ -1,54 +1,17 @@
-import { NetworkConnectorComponent } from "../connector/NetworkConnectorComponent";
-import { NetworkRequestType, NetworkResponseType, NetworkServerConfig } from "../../types";
+import { StreamSubscribeComponent } from "core/components/subscribe/StreamSubscribeComponent";
+import { INetworkConnectorSocketComponent } from "./interface";
+import { Controller } from "./mvc/Controller";
+import { Model } from "./mvc/Model";
+import { View } from "./mvc/View";
 /**
- * WebSocket connector component
+ * Network connector socket component
+ * Handles WebSocket connections
  */
-declare class NetworkConnectorSocketComponent extends NetworkConnectorComponent {
-    private socket;
-    private heartbeatTimer;
-    private reconnectTimer;
-    private messageQueue;
-    private pendingRequests;
-    constructor(serverConfig: NetworkServerConfig);
-    /**
-     * Connect to WebSocket server
-     */
-    connect(): Promise<void>;
-    /**
-     * Disconnect from WebSocket server
-     */
-    disconnect(): Promise<void>;
-    /**
-     * Send message through WebSocket
-     */
-    send(request: NetworkRequestType): Promise<NetworkResponseType>;
-    /**
-     * Handle incoming WebSocket message
-     */
-    private handleMessage;
-    /**
-     * Handle WebSocket close event
-     */
-    private handleClose;
-    /**
-     * Attempt to reconnect to WebSocket server
-     */
-    private attemptReconnect;
-    /**
-     * Start heartbeat (ping/pong) to keep connection alive
-     */
-    private startHeartbeat;
-    /**
-     * Stop heartbeat
-     */
-    private stopHeartbeat;
-    /**
-     * Process queued messages after connection
-     */
-    private processMessageQueue;
-    /**
-     * Generate unique request ID
-     */
-    private generateRequestId;
+export declare class NetworkConnectorSocketComponent extends StreamSubscribeComponent implements INetworkConnectorSocketComponent {
+    serverConfig: any;
+    protected classes: {
+        Controller: typeof Controller;
+        Model: typeof Model;
+        View: typeof View;
+    };
 }
-export { NetworkConnectorSocketComponent };

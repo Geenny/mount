@@ -21,12 +21,12 @@ export class StreamSubscribeComponent extends BaseComponent implements IComponen
         if ( !this.streamComponent ) {
             const component = this.subscriberMap.get( ComponentNameEnum.STREAM );
             if ( !component ) {
-                output.error( this, 'StreamSubscribeComponent: Stream component not found in subscriptions!' );
+                output.error( this, `${ this.name }: Stream component not found in subscriptions!` );
                 return;
             }
 
             if ( !( component instanceof StreamComponent ) ) {
-                output.error( this, 'StreamSubscribeComponent: Stream component is not an instance of StreamComponent!' );
+                output.error( this, `${ this.name }: Stream component is not an instance of StreamComponent!` );
                 return;
             }
 

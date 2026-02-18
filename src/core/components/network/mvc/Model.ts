@@ -1,6 +1,5 @@
 import { BaseModel } from "core/base/construction/component/BaseModel";
-import { INetworkComponent, INetworkController, INetworkModel, INetworkView } from "../interface";
-import { NetworkConnectorComponent } from "../components/connector/NetworkConnectorComponent";
+import { INetworkModel } from "../interface";
 import { NetworkConnectionRequest, NetworkStatsType } from "../types";
 import { Storage } from "utils/storage/Storage";
 
@@ -9,70 +8,42 @@ import { Storage } from "utils/storage/Storage";
  */
 export class Model extends BaseModel implements INetworkModel {
     
-    protected component: INetworkComponent;
-    protected controller: INetworkController;
-    protected view: INetworkView;
-    
-    // Connectors map
-    public connectors: Map< string, NetworkConnectorComponent > = new Map();
-    
     // Request queues (per server)
-    public requestQueues: Map< string, NetworkConnectionRequest[] > = new Map();
+    get requestQueues(): Map< string, NetworkConnectionRequest[] > {
+        return this.data.requestQueues || new Map();
+    }
+    set requestQueues( value: Map< string, NetworkConnectionRequest[] > ) {
+        this.data.requestQueues = value;
+    }
     
     // Active requests
-    public activeRequests: Map< string, NetworkConnectionRequest > = new Map();
+    get activeRequests(): Map< string, NetworkConnectionRequest > {
+        return this.data.activeRequests || new Map();
+    }
+    set activeRequests( value: Map< string, NetworkConnectionRequest > ) {
+        this.data.activeRequests = value;
+    }
     
     // Caches (per server)
-    public caches: Map< string, Storage > = new Map();
+    get caches(): Map< string, Storage > {
+        return this.data.caches || new Map();
+    }
+    set caches( value: Map< string, Storage > ) {
+        this.data.caches = value;
+    }
     
     // Statistics
-    public stats: NetworkStatsType = {
-        totalRequests: 0,
-        successRequests: 0,
-        errorRequests: 0,
-        activeRequests: 0,
-        queuedRequests: 0
-    };
-    
-    constructor( component: INetworkComponent, controller: INetworkController, view: INetworkView ) {
-        super();
-        
-        this.component = component;
-        this.controller = controller;
-        this.view = view;
+    get stats(): NetworkStatsType {
+        return this.data.stats || {
+            totalRequests: 0,
+            successRequests: 0,
+            errorRequests: 0,
+            activeRequests: 0,
+            queuedRequests: 0
+        };
+    }
+    set stats( value: NetworkStatsType ) {
+        this.data.stats = value;
     }
     
-    /**
-     * Get connector by server ID
-     */
-    getConnector( serverId: string ): NetworkConnectorComponent | undefined {
-        return this.connectors.get( serverId );
-    }
-    
-    /**
-     * Get request queue for server
-     */
-    getQueue( serverId: string ): NetworkConnectionRequest[] {
-        return this.requestQueues.get( serverId ) || [];
-    }
-    
-    /**
-     * Get cache for server
-     */
-    getCache( serverId: string ): Storage | undefined {
-        return this.caches.get( serverId );
-    }
-    
-    /**
-     * Update statistics
-     */
-    updateStats(): void {
-        this.stats.activeRequests = this.activeRequests.size;
-        
-        let queuedCount = 0;
-        for ( const queue of this.requestQueues.values() ) {
-            queuedCount += queue.length;
-        }
-        this.stats.queuedRequests = queuedCount;
-    }
 }

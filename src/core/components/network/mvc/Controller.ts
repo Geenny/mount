@@ -3,23 +3,12 @@ import { INetworkComponent, INetworkController, INetworkModel, INetworkView } fr
 import { NETWORK_EVENT } from "core/constants";
 import { output } from "utils/index";
 import { Storage } from "utils/storage/Storage";
-import { NetworkConnectorRequestComponent } from "../components/request/NetworkConnectorRequestComponent";
-import { NetworkConnectorSocketComponent } from "../components/socket/NetworkConnectorSocketComponent";
-import { 
-    NetworkRequestType, 
-    NetworkResponseType, 
-    NetworkErrorType,
-    NetworkConnectionRequest,
-    NetworkServerConfig 
-} from "../types";
-import { 
-    NetworkConnectionType, 
-    NetworkRequestStatus,
-    NetworkConnectionStatus 
-} from "../enums";
+import { NetworkConnectionRequest, NetworkResponseType, NetworkErrorType } from "../types";
+import { NetworkRequestStatus } from "../enums";
 
 /**
  * Network component controller
+ * Manages request queues, caching, and routing to connector components
  */
 export class Controller extends BaseController implements INetworkController {
     
@@ -27,50 +16,12 @@ export class Controller extends BaseController implements INetworkController {
     protected model: INetworkModel;
     protected view: INetworkView;
     
-    private params: { servers: NetworkServerConfig[] };
-    
     constructor( component: INetworkComponent, model: INetworkModel, view: INetworkView ) {
         super( component, model, view );
         
         this.component = component;
         this.model = model;
         this.view = view;
-        
-        this.params = ( component as any ).config.params || { servers: [] };
-    }
-    
-    /**
-     * Initialize network component
-     * Creates connectors and performs health checks
-     */
-    async onInit(): Promise< void > {
-        output.log( this, 'Initializing network component...' );
-        
-        const healthCheckPromises: Promise< void >[] = [];
-        
-        // Create connectors for each server
-        for ( const serverConfig of this.params.servers ) {
-            try {
-                await this.createConnector( serverConfig );
-                
-                // If health check is configured, add to promises
-                if ( serverConfig.healthCheck ) {
-                    healthCheckPromises.push( 
-                        this.healthCheckBlocking( serverConfig ) 
-                    );
-                }
-            } catch ( error ) {
-                output.error( this, `Failed to create connector for ${ serverConfig.id }:`, error );
-            }
-        }
-        
-        // Wait for all health checks to complete
-        if ( healthCheckPromises.length > 0 ) {
-            output.log( this, `Waiting for ${ healthCheckPromises.length } health checks...` );
-            await Promise.all( healthCheckPromises );
-        }
-        
-        output.log( this, 'Network component initialized' );
     }
     
     /**
@@ -78,92 +29,53 @@ export class Controller extends BaseController implements INetworkController {
      * Subscribe to network requests from application
      */
     async onStart(): Promise< void > {
-        // Subscribe to network requests
-        this.component.subscribe( NETWORK_EVENT.REQUEST, this.onRequest.bind( this ) );
+        this.subscribeToNetworkEvents();
+        this.initializeCaches();
         
         output.log( this, 'Network component started' );
     }
     
     /**
-     * Stop network component
-     * Disconnect all connectors
+     * Initialize caches for connectors
      */
-    async onStop(): Promise< void > {
-        // Disconnect all connectors
-        for ( const connector of this.model.connectors.values() ) {
-            await connector.disconnect();
-        }
+    protected initializeCaches(): void {
+        // Get connector components from config
+        const components = ( this.component as any ).getComponents?.();
         
-        output.log( this, 'Network component stopped' );
+        if ( components ) {
+            for ( const connector of components.values() ) {
+                const params = ( connector as any ).config?.params;
+                
+                if ( params?.cache?.enabled ) {
+                    const caches = this.model.caches;
+                    caches.set( params.id, new Storage() );
+                    this.model.caches = caches;
+                    
+                    output.log( this, `Cache initialized for ${ params.id }` );
+                }
+            }
+        }
     }
     
     /**
-     * Create connector for server
+     * Subscribe to network events
      */
-    private async createConnector( config: NetworkServerConfig ): Promise< void > {
-        let connector;
+    protected subscribeToNetworkEvents(): void {
+        // Subscribe to network requests from application
+        this.component.subscribe( NETWORK_EVENT.REQUEST, this.onRequest.bind( this ) );
         
-        // Create connector based on type
-        if ( config.type === NetworkConnectionType.HTTP ) {
-            connector = new NetworkConnectorRequestComponent( config );
-        } else if ( config.type === NetworkConnectionType.WEBSOCKET ) {
-            connector = new NetworkConnectorSocketComponent( config );
-        } else {
-            throw new Error( `Unknown connection type: ${ config.type }` );
-        }
+        // Subscribe to responses from connectors
+        this.component.subscribe( NETWORK_EVENT.RESPONSE, this.onResponse.bind( this ) );
         
-        // Initialize storage cache if enabled
-        if ( config.cache?.enabled ) {
-            const storage = new Storage();
-            this.model.caches.set( config.id, storage );
-        }
-        
-        // Store connector
-        this.model.connectors.set( config.id, connector );
-        
-        // Initialize request queue
-        this.model.requestQueues.set( config.id, [] );
-        
-        output.log( this, `Created ${ config.type } connector for ${ config.id }` );
-    }
-    
-    /**
-     * Perform blocking health check
-     */
-    private async healthCheckBlocking( config: NetworkServerConfig ): Promise< void > {
-        const connector = this.model.getConnector( config.id );
-        
-        if ( !connector ) {
-            throw new Error( `Connector not found: ${ config.id }` );
-        }
-        
-        try {
-            await connector.connect();
-            output.log( this, `Health check passed for ${ config.id }` );
-            
-            // Emit connected event
-            this.emit( NETWORK_EVENT.CONNECTED, {
-                serverId: config.id,
-                status: NetworkConnectionStatus.CONNECTED
-            } );
-        } catch ( error ) {
-            output.error( this, `Health check failed for ${ config.id }:`, error );
-            throw error;
-        }
+        // Subscribe to errors from connectors
+        this.component.subscribe( NETWORK_EVENT.ERROR, this.onError.bind( this ) );
     }
     
     /**
      * Handle incoming network request
      */
-    private onRequest( requestConfig: NetworkRequestType ): void {
+    protected onRequest( requestConfig: any ): void {
         const { serverId } = requestConfig;
-        
-        // Validate server exists
-        const connector = this.model.getConnector( serverId );
-        if ( !connector ) {
-            output.error( this, `Server not found: ${ serverId }` );
-            return;
-        }
         
         // Create connection request object
         const request: NetworkConnectionRequest = {
@@ -183,22 +95,92 @@ export class Controller extends BaseController implements INetworkController {
         // Add to queue
         this.addToQueue( serverId, request );
         
+        // Update stats
+        const stats = this.model.stats;
+        stats.totalRequests++;
+        this.model.stats = stats;
+        
         // Emit queued event
         this.emit( NETWORK_EVENT.REQUEST_QUEUED, request );
-        
-        // Update stats
-        this.model.stats.totalRequests++;
-        this.model.updateStats();
         
         // Process queue
         this.processQueue( serverId );
     }
     
     /**
+     * Handle response from connector
+     */
+    protected onResponse( response: NetworkResponseType ): void {
+        const { serverId, requestId } = response;
+        
+        // Remove from active requests
+        const activeRequests = this.model.activeRequests;
+        const request = activeRequests.get( requestId );
+        
+        if ( request ) {
+            // Save to cache if enabled
+            if ( request.config.cache ) {
+                this.saveToCache( request, response );
+            }
+            
+            // Update stats
+            const stats = this.model.stats;
+            stats.successRequests++;
+            this.model.stats = stats;
+            
+            // Remove from active
+            activeRequests.delete( requestId );
+            this.model.activeRequests = activeRequests;
+            
+            // Continue processing queue
+            this.processQueue( serverId );
+        }
+    }
+    
+    /**
+     * Handle error from connector
+     */
+    protected onError( error: NetworkErrorType ): void {
+        const { serverId, requestId, request } = error;
+        
+        // Retry logic
+        const shouldRetry = this.shouldRetry( request );
+        
+        if ( shouldRetry ) {
+            request.status = NetworkRequestStatus.RETRY;
+            request.attempt++;
+            
+            output.warn( this, `Request retry (${ request.attempt }): ${ error.error.message }` );
+            
+            // Add back to queue with delay
+            const retryDelay = request.config.retry || 1000;
+            setTimeout( () => {
+                this.addToQueue( serverId, request );
+                this.processQueue( serverId );
+            }, retryDelay );
+            
+        } else {
+            // Update stats
+            const stats = this.model.stats;
+            stats.errorRequests++;
+            this.model.stats = stats;
+            
+            // Remove from active
+            const activeRequests = this.model.activeRequests;
+            activeRequests.delete( requestId );
+            this.model.activeRequests = activeRequests;
+            
+            // Continue processing queue
+            this.processQueue( serverId );
+        }
+    }
+    
+    /**
      * Check if request result is in cache
      */
-    private checkCache( request: NetworkConnectionRequest ): boolean {
-        const cache = this.model.getCache( request.config.serverId );
+    protected checkCache( request: NetworkConnectionRequest ): boolean {
+        const caches = this.model.caches;
+        const cache = caches.get( request.config.serverId );
         
         if ( !cache ) {
             return false;
@@ -228,49 +210,27 @@ export class Controller extends BaseController implements INetworkController {
     }
     
     /**
-     * Build cache key from request config
-     */
-    private buildCacheKey( config: NetworkRequestType ): string {
-        return `${ config.method || 'POST' }_${ config.endpoint }_${ JSON.stringify( config.body || {} ) }`;
-    }
-    
-    /**
      * Add request to queue (sorted by priority)
      */
-    private addToQueue( serverId: string, request: NetworkConnectionRequest ): void {
-        const queue = this.model.getQueue( serverId );
+    protected addToQueue( serverId: string, request: NetworkConnectionRequest ): void {
+        const requestQueues = this.model.requestQueues;
+        const queue = requestQueues.get( serverId ) || [];
         
         queue.push( request );
         
         // Sort by priority (higher = earlier)
         queue.sort( ( a: NetworkConnectionRequest, b: NetworkConnectionRequest ) => b.priority - a.priority );
         
-        this.model.requestQueues.set( serverId, queue );
+        requestQueues.set( serverId, queue );
+        this.model.requestQueues = requestQueues;
     }
     
     /**
      * Process request queue for server
      */
-    private async processQueue( serverId: string ): Promise< void > {
-        const connector = this.model.getConnector( serverId );
-        const config = this.params.servers.find( s => s.id === serverId );
-        const queue = this.model.getQueue( serverId );
-        
-        if ( !connector || !config ) {
-            return;
-        }
-        
-        // For HTTP: check concurrent request limit
-        if ( config.type === NetworkConnectionType.HTTP ) {
-            const maxConcurrent = config.maxConcurrent || 1;
-            const activeCount = Array.from( this.model.activeRequests.values() )
-                .filter( r => r.config.serverId === serverId )
-                .length;
-            
-            if ( activeCount >= maxConcurrent ) {
-                return; // Wait for slots to free up
-            }
-        }
+    protected processQueue( serverId: string ): void {
+        const requestQueues = this.model.requestQueues;
+        const queue = requestQueues.get( serverId ) || [];
         
         // Get next request from queue
         const request = queue.shift();
@@ -278,107 +238,27 @@ export class Controller extends BaseController implements INetworkController {
             return;
         }
         
-        this.model.requestQueues.set( serverId, queue );
-        
-        // Execute request
-        await this.executeRequest( connector, request );
-    }
-    
-    /**
-     * Execute network request
-     */
-    private async executeRequest( 
-        connector: any, 
-        request: NetworkConnectionRequest 
-    ): Promise< void > {
-        request.status = NetworkRequestStatus.IN_PROGRESS;
-        request.startedAt = Date.now();
+        requestQueues.set( serverId, queue );
+        this.model.requestQueues = requestQueues;
         
         // Add to active requests
-        this.model.activeRequests.set( request.id, request );
-        this.model.updateStats();
+        const activeRequests = this.model.activeRequests;
+        activeRequests.set( request.id, request );
+        this.model.activeRequests = activeRequests;
         
-        // Emit start event
+        // Emit request start event
         this.emit( NETWORK_EVENT.REQUEST_START, request );
-        
-        try {
-            // Execute request
-            const response: NetworkResponseType = await connector.send( request.config );
-            
-            request.status = NetworkRequestStatus.SUCCESS;
-            request.completedAt = Date.now();
-            
-            // Save to cache if enabled
-            if ( request.config.cache ) {
-                this.saveToCache( request, response );
-            }
-            
-            // Emit response
-            this.emit( NETWORK_EVENT.RESPONSE, response );
-            
-            // Update stats
-            this.model.stats.successRequests++;
-            
-        } catch ( error: any ) {
-            request.status = NetworkRequestStatus.ERROR;
-            request.error = error;
-            request.attempt++;
-            
-            // Check if should retry
-            const shouldRetry = this.shouldRetry( request );
-            
-            if ( shouldRetry ) {
-                request.status = NetworkRequestStatus.RETRY;
-                
-                output.warn( this, `Request retry (${ request.attempt }): ${ error.message }` );
-                
-                // Add back to queue with delay
-                const serverConfig = this.params.servers.find( s => s.id === request.config.serverId );
-                const retryDelay = serverConfig?.retryDelay || 1000;
-                
-                setTimeout( () => {
-                    this.addToQueue( request.config.serverId, request );
-                    this.processQueue( request.config.serverId );
-                }, retryDelay );
-                
-            } else {
-                request.status = NetworkRequestStatus.ERROR;
-                request.completedAt = Date.now();
-                
-                output.warn( this, `Request failed: ${ error.message }` );
-                
-                // Emit error
-                const networkError: NetworkErrorType = {
-                    serverId: request.config.serverId,
-                    requestId: request.id,
-                    request,
-                    error,
-                    timestamp: Date.now()
-                };
-                
-                this.emit( NETWORK_EVENT.ERROR, networkError );
-                
-                // Update stats
-                this.model.stats.errorRequests++;
-            }
-            
-        } finally {
-            // Remove from active requests
-            this.model.activeRequests.delete( request.id );
-            this.model.updateStats();
-            
-            // Continue processing queue
-            this.processQueue( request.config.serverId );
-        }
     }
     
     /**
      * Check if request should be retried
      */
-    private shouldRetry( request: NetworkConnectionRequest ): boolean {
-        const retry = request.config.retry ?? 
-            this.params.servers.find( s => s.id === request.config.serverId )?.retry ?? 
-            0;
+    protected shouldRetry( request: NetworkConnectionRequest ): boolean {
+        const retry = request.config.retry;
+        
+        if ( retry === undefined ) {
+            return false;
+        }
         
         if ( retry === -1 ) {
             return true; // Infinite retries
@@ -390,8 +270,9 @@ export class Controller extends BaseController implements INetworkController {
     /**
      * Save response to cache
      */
-    private saveToCache( request: NetworkConnectionRequest, response: NetworkResponseType ): void {
-        const cache = this.model.getCache( request.config.serverId );
+    protected saveToCache( request: NetworkConnectionRequest, response: NetworkResponseType ): void {
+        const caches = this.model.caches;
+        const cache = caches.get( request.config.serverId );
         
         if ( !cache ) {
             return;
@@ -404,9 +285,23 @@ export class Controller extends BaseController implements INetworkController {
     }
     
     /**
+     * Build cache key from request config
+     */
+    protected buildCacheKey( config: any ): string {
+        return `${ config.method || 'POST' }_${ config.endpoint }_${ JSON.stringify( config.body || {} ) }`;
+    }
+    
+    /**
      * Generate unique request ID
      */
-    private generateRequestId(): string {
+    protected generateRequestId(): string {
         return `req_${ Date.now() }_${ Math.random().toString( 36 ).substr( 2, 9 ) }`;
+    }
+    
+    /**
+     * Model change handler
+     */
+    onModelChange( key: string, value: any ): void {
+        // Handle model changes if needed
     }
 }

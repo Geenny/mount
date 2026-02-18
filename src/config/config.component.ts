@@ -1,6 +1,6 @@
 import { ComponentConfigType } from 'core/components/types';
 import { systemDataConfig } from './system/config.system.component';
-import { networkParams } from './network/config.network.params';
+import { networkComponentsConfig } from './network/config.network.components';
 import { ComponentNameEnum, ComponentTypeEnum } from 'core/components/enums';
 import {
     ApplicationComponent,
@@ -47,7 +47,7 @@ export const componentsConfig: ComponentConfigType = {
             unique: true,
             instance: NetworkComponent,
             dependent: [ ComponentNameEnum.STREAM, ComponentNameEnum.SYSTEM ],
-            params: networkParams
+            components: networkComponentsConfig
         }
     }
 };
