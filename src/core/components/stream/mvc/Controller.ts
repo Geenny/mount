@@ -1,8 +1,8 @@
 import { BaseController } from "core/base/construction/component/BaseController";
 import { output } from "utils/index";
 import { IStreamComponent, IStreamController, IStreamModel, IStreamView } from "../interface";
-import { BaseSubscription } from "core/base/construction/subscription/BaseSubscription";
-import { SubscribeEvent, SubscribeMessageData } from "core/base/construction/subscription/types";
+import { BaseRecipient } from "core/base/construction/recipient/BaseRecipient";
+import { RecipientEvent, RecipientMessageData } from "core/base/construction/recipient/types";
 
 export class Controller extends BaseController implements IStreamController {
 
@@ -21,7 +21,7 @@ export class Controller extends BaseController implements IStreamController {
         this.view = view;
     }
 
-    emit( event: SubscribeEvent, data: any ): void {
+    emit( event: RecipientEvent, data: any ): void {
 
         if ( !this.isWorking ) {
             output.error( this, 'StreamComponent: Is not working!!!' );
@@ -40,7 +40,7 @@ export class Controller extends BaseController implements IStreamController {
         } );
     }
 
-    stream( instance: BaseSubscription, event: SubscribeEvent, method: Function ): void {
+    stream( instance: BaseRecipient, event: RecipientEvent, method: Function ): void {
         if ( !this.isWorking ) {
             output.error( this, 'StreamComponent: Is not working!!!' );
             return;
@@ -59,7 +59,7 @@ export class Controller extends BaseController implements IStreamController {
         this.view.subscribe( instance, event, method );
     }
 
-    unstream(instance: BaseSubscription, event: SubscribeEvent, method: Function): void {
+    unstream(instance: BaseRecipient, event: RecipientEvent, method: Function): void {
         this.view.unsubscribe( instance, event, method );
     }
 
@@ -68,11 +68,11 @@ export class Controller extends BaseController implements IStreamController {
     // INSTANCE MANAGEMENT
     //
 
-    instanceAdd( instance: BaseSubscription ): void {
+    instanceAdd( instance: BaseRecipient ): void {
         this.view.add( instance );
     }
 
-    instanceRemove( instance: BaseSubscription ): void {
+    instanceRemove( instance: BaseRecipient ): void {
         this.view.remove( instance );
     }
 

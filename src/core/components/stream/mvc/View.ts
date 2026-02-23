@@ -1,18 +1,18 @@
 import { BaseView } from "core/base/construction/component/BaseView";
 import { Subject } from "rxjs";
 import { IStreamView } from "../interface";
-import { SubscribeEvent } from "core/base/construction/subscription/types";
-import { BaseSubscription } from "core/base/construction/subscription/BaseSubscription";
+import { RecipientEvent } from "core/base/construction/recipient/types";
+import { BaseRecipient } from "core/base/construction/recipient/BaseRecipient";
 import { StreamInstanceStruct } from "../types";
 
 export class View extends BaseView implements IStreamView {
 
-    protected instances: BaseSubscription[] = [];
-    protected events: Map<SubscribeEvent, StreamInstanceStruct[]> = new Map();
+    protected instances: BaseRecipient[] = [];
+    protected events: Map<RecipientEvent, StreamInstanceStruct[]> = new Map();
 
-    private list: Map<SubscribeEvent, Subject<any>> = new Map();
+    private list: Map<RecipientEvent, Subject<any>> = new Map();
 
-    subjectGet( type: SubscribeEvent ): Subject<any> {
+    subjectGet( type: RecipientEvent ): Subject<any> {
         let subject = this.list.get( type );
 
         if ( !subject ) {
@@ -28,17 +28,17 @@ export class View extends BaseView implements IStreamView {
     // INSTANCE TARGETs
     //
 
-    isExist( instance: BaseSubscription ): boolean {
+    isExist( instance: BaseRecipient ): boolean {
         return this.instances.indexOf( instance ) >= 0;
     }
 
-    add( instance: BaseSubscription ): void {
+    add( instance: BaseRecipient ): void {
         if ( this.instances.indexOf( instance ) >= 0 ) return;
 
         this.instances.push( instance );
     }
 
-    remove( instance: BaseSubscription ): void {
+    remove( instance: BaseRecipient ): void {
         const index = this.instances.indexOf( instance );
         if ( index < 0 ) return;
 
@@ -46,12 +46,12 @@ export class View extends BaseView implements IStreamView {
     }
 
 
-    byEventGet( event: SubscribeEvent ): StreamInstanceStruct[] {
+    byEventGet( event: RecipientEvent ): StreamInstanceStruct[] {
         const list = this.events.get( event ) || [];
         return list;
     }
 
-    subscribe( instance: BaseSubscription, event: SubscribeEvent, method: Function ): void {
+    subscribe( instance: BaseRecipient, event: RecipientEvent, method: Function ): void {
         let list = this.events.get( event );
 
         if ( !list ) {
@@ -61,7 +61,7 @@ export class View extends BaseView implements IStreamView {
 
         list.push( { instance, event, method } );
     }
-    unsubscribe( instance: BaseSubscription, event: SubscribeEvent, method: Function ): void {
+    unsubscribe( instance: BaseRecipient, event: RecipientEvent, method: Function ): void {
         const list = this.events.get( event );
         if ( !list ) return;
 

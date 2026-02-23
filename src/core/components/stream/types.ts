@@ -1,6 +1,6 @@
-import { BaseSubscription } from "core/base/construction/subscription/BaseSubscription";
-import { SubscribeEvent } from "core/base/construction/subscription/types";
+import { BaseRecipient } from "core/base/construction/recipient/BaseRecipient";
+import { RecipientEvent } from "core/base/construction/recipient/types";
 
-type StreamInstanceStruct = { instance: BaseSubscription, event: SubscribeEvent, method: Function };
+type StreamInstanceStruct = { instance: BaseRecipient, event: RecipientEvent, method: Function };
 
 export { StreamInstanceStruct };

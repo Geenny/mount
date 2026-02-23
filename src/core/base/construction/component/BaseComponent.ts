@@ -1,14 +1,16 @@
 import { ConfigType } from "core/base/types";
-import { BaseSubscription } from "../subscription/BaseSubscription";
+import { BaseRecipient } from "../recipient/BaseRecipient";
 import { BaseController } from "./BaseController";
 import { BaseModel } from "./BaseModel";
 import { BaseView } from "./BaseView";
 import { IComponent, IController, IModel, IView } from "./interface";
 import { ComponentClassesType } from "./types";
-import { SubscribeData, SubscribeEvent } from "../subscription/types";
-import { SubscribeActionEnum, SubscribeTypeEnum } from "../subscription/enum";
+import { RecipientData, RecipientEvent } from "../recipient/types";
+import { RecipientActionEnum, RecipientTypeEnum } from "../recipient/enum";
 
-export class BaseComponent extends BaseSubscription implements IComponent {
+export class BaseComponent extends BaseRecipient implements IComponent {
+
+    protected childrenMap: Map<number, BaseComponent> = new Map();
 
     protected controller?: IController;
     protected model?: IModel;
@@ -73,19 +75,83 @@ export class BaseComponent extends BaseSubscription implements IComponent {
     // SUBSCRIPTIONS
     //
 
-    subscribe( event: SubscribeEvent, method: Function ): void {
+    /**
+     * Broadcast message to Recipients that subscribe is created
+     */
+    subscribe( event: RecipientEvent, method: Function ): void {
         const messageData = { instance: this, source: { event, method } };
-        this.message( SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, messageData );
+        this.message( RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, messageData );
+    }
+    unsubscribe( event: RecipientEvent, method: Function ): void {
+        const messageData = { instance: this, source: { event, method } };
+        this.message( RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.STOP, messageData );
     }
 
-    unsubscribe( event: SubscribeEvent, method: Function ): void {
-        const messageData = { instance: this, source: { event, method } };
-        this.message( SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.STOP, messageData );
-    }
-
-    emit( event: SubscribeEvent, data?: SubscribeData ): void {
+    /**
+     * Broadcast message to Recipients that data is emitted
+     */
+    emit( event: RecipientEvent, data?: RecipientData ): void {
         const messageData = { instance: this, source: { event, data } };
-        this.message( SubscribeTypeEnum.DATA, SubscribeActionEnum.START, messageData );
+        this.message( RecipientTypeEnum.DATA, RecipientActionEnum.START, messageData );
+    }
+
+
+
+    //
+    // MESSAGES
+    //
+
+    onMessage( type: RecipientTypeEnum, action: RecipientActionEnum, data: RecipientData ): void {
+
+        // Just RecipientTypeEnum.SYSTEM messages
+        if ( type !== RecipientTypeEnum.SYSTEM ) return;
+
+        // Ignore own messages
+        if ( data.instance === this ) return;
+
+        // Handle children add/remove
+        this.childrenHandle( action, data.instance );
+
+    }
+
+
+
+    //
+    // CHILDREN
+    //
+
+    protected childrenHandle( action: RecipientActionEnum, instance: BaseComponent ): void {
+        switch ( action ) {
+            case RecipientActionEnum.START:
+                this.childrenAdd( instance );
+                break;
+            case RecipientActionEnum.STOP:
+                this.childrenRemove( instance );
+                break;
+        }
+    }
+
+    protected childrenAdd( instance: BaseComponent ): void {
+
+        // Check ID is number more than 0
+        if ( instance.ID === undefined || instance.ID <= 0 ) return;
+
+        // Check if instance is already a child
+        if ( this.childrenMap.has( instance.ID! ) ) return;
+        
+        // Add to children map
+        this.childrenMap.set( instance.ID!, instance );
+
+    }
+
+    protected childrenRemove( instance: BaseComponent ): void {
+
+        // Check if instance is already a child
+        if ( !this.childrenMap.has( instance.ID! ) ) return;
+        
+        // Remove from children map
+        this.childrenMap.delete( instance.ID! );
+
     }
 
 
@@ -104,11 +170,11 @@ export class BaseComponent extends BaseSubscription implements IComponent {
         this.controllerSet();
 
         this.model?.configurate( this.params );
-        await this.view?.init( {} );
-        await this.controller?.init( {} );
+        await this.view?.init();
+        await this.controller?.init();
 
         const messageData = { instance: this };
-        this.message( SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, messageData );
+        this.message( RecipientTypeEnum.SYSTEM, RecipientActionEnum.START, messageData );
     }
 
     protected async onDestroy(): Promise<void> {
@@ -117,7 +183,7 @@ export class BaseComponent extends BaseSubscription implements IComponent {
         await this.view?.destroy();
 
         const messageData = { instance: this };
-        this.message( SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.STOP, messageData );
+        this.message( RecipientTypeEnum.SYSTEM, RecipientActionEnum.STOP, messageData );
     }
 
     protected async onStart(): Promise<void> {

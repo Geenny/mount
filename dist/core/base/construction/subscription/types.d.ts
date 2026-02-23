@@ -1,4 +1,4 @@
-import { BaseSubscription } from "./BaseSubscription";
+import { BaseRecipient } from "./BaseRecipient";
 type SubscribeEvent = string | symbol;
 type SubscribeData = Record<string, any>;
 type SubscribeSource = {
@@ -7,7 +7,7 @@ type SubscribeSource = {
     method?: Function;
 };
 type SubscribeMessageData = {
-    instance: BaseSubscription;
+    instance: BaseRecipient;
     source?: SubscribeSource;
 };
 export { SubscribeEvent, SubscribeData, SubscribeMessageData, SubscribeSource };

@@ -3,7 +3,7 @@ import { SystemResizeComponent } from '../core/components/system/components/resi
 import { SystemKeyboardComponent } from '../core/components/system/components/keyboard/SystemKeyboardComponent';
 import { StreamComponent } from '../core/components/stream/StreamComponent';
 import { ComponentNameEnum, ComponentSystemNameEnum, ComponentTypeEnum } from '../core/components/enums';
-import { SubscribeTypeEnum, SubscribeActionEnum } from '../core/base/construction/subscription/enum';
+import { RecipientTypeEnum, RecipientActionEnum } from '../core/base/construction/recipient/enum';
 import { SYSTEM_EVENT } from '../core/constants';
 
 /**
@@ -41,9 +41,9 @@ describe('System Child Components', () => {
         unique: true,
       });
 
-      visibilityComponent['subscriberSet'](ComponentNameEnum.STREAM, streamComponent);
+      visibilityComponent['recipientSet'](ComponentNameEnum.STREAM, streamComponent);
 
-      streamComponent.onMessage(SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, {
+      streamComponent.onMessage(RecipientTypeEnum.SYSTEM, RecipientActionEnum.START, {
         instance: visibilityComponent,
       });
 
@@ -66,7 +66,7 @@ describe('System Child Components', () => {
       const mockMethod = jest.fn();
 
       // Subscribe to visibility events
-      streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+      streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
         instance: visibilityComponent,
         source: { event: SYSTEM_EVENT.VISIBILITY, method: mockMethod },
       });
@@ -87,7 +87,7 @@ describe('System Child Components', () => {
     test('should emit correct visibility state when document is hidden', () => {
       const mockMethod = jest.fn();
 
-      streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+      streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
         instance: visibilityComponent,
         source: { event: SYSTEM_EVENT.VISIBILITY, method: mockMethod },
       });
@@ -117,9 +117,9 @@ describe('System Child Components', () => {
         unique: true,
       });
 
-      resizeComponent['subscriberSet'](ComponentNameEnum.STREAM, streamComponent);
+      resizeComponent['recipientSet'](ComponentNameEnum.STREAM, streamComponent);
 
-      streamComponent.onMessage(SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, {
+      streamComponent.onMessage(RecipientTypeEnum.SYSTEM, RecipientActionEnum.START, {
         instance: resizeComponent,
       });
 
@@ -142,7 +142,7 @@ describe('System Child Components', () => {
       const mockMethod = jest.fn();
 
       // Subscribe to resize events
-      streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+      streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
         instance: resizeComponent,
         source: { event: SYSTEM_EVENT.RESIZE, method: mockMethod },
       });
@@ -171,7 +171,7 @@ describe('System Child Components', () => {
     test('should emit correct dimensions on multiple resize events', () => {
       const mockMethod = jest.fn();
 
-      streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+      streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
         instance: resizeComponent,
         source: { event: SYSTEM_EVENT.RESIZE, method: mockMethod },
       });
@@ -203,9 +203,9 @@ describe('System Child Components', () => {
         unique: true,
       });
 
-      keyboardComponent['subscriberSet'](ComponentNameEnum.STREAM, streamComponent);
+      keyboardComponent['recipientSet'](ComponentNameEnum.STREAM, streamComponent);
 
-      streamComponent.onMessage(SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, {
+      streamComponent.onMessage(RecipientTypeEnum.SYSTEM, RecipientActionEnum.START, {
         instance: keyboardComponent,
       });
 
@@ -227,7 +227,7 @@ describe('System Child Components', () => {
     test('should emit keyboard event on keydown', () => {
       const mockMethod = jest.fn();
 
-      streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+      streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
         instance: keyboardComponent,
         source: { event: SYSTEM_EVENT.KEYBOARD, method: mockMethod },
       });
@@ -256,7 +256,7 @@ describe('System Child Components', () => {
     test('should emit keyboard event on keyup', () => {
       const mockMethod = jest.fn();
 
-      streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+      streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
         instance: keyboardComponent,
         source: { event: SYSTEM_EVENT.KEYBOARD, method: mockMethod },
       });
@@ -284,7 +284,7 @@ describe('System Child Components', () => {
     test('should handle multiple key events', () => {
       const mockMethod = jest.fn();
 
-      streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+      streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
         instance: keyboardComponent,
         source: { event: SYSTEM_EVENT.KEYBOARD, method: mockMethod },
       });
@@ -303,7 +303,7 @@ describe('System Child Components', () => {
     test('should capture modifier keys correctly', () => {
       const mockMethod = jest.fn();
 
-      streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+      streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
         instance: keyboardComponent,
         source: { event: SYSTEM_EVENT.KEYBOARD, method: mockMethod },
       });
@@ -354,9 +354,9 @@ describe('System Child Components', () => {
           unique: true,
         });
 
-        components[i]['subscriberSet'](ComponentNameEnum.STREAM, streamComponent);
+        components[i]['recipientSet'](ComponentNameEnum.STREAM, streamComponent);
 
-        streamComponent.onMessage(SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, {
+        streamComponent.onMessage(RecipientTypeEnum.SYSTEM, RecipientActionEnum.START, {
           instance: components[i],
         });
 
@@ -379,17 +379,17 @@ describe('System Child Components', () => {
       const keyboardMock = jest.fn();
 
       // Subscribe to all events
-      streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+      streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
         instance: visibilityComponent,
         source: { event: SYSTEM_EVENT.VISIBILITY, method: visibilityMock },
       });
 
-      streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+      streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
         instance: resizeComponent,
         source: { event: SYSTEM_EVENT.RESIZE, method: resizeMock },
       });
 
-      streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+      streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
         instance: keyboardComponent,
         source: { event: SYSTEM_EVENT.KEYBOARD, method: keyboardMock },
       });

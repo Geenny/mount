@@ -1,9 +1,9 @@
 import { ConfigType } from "core/base/types";
-import { BaseSubscription } from "../subscription/BaseSubscription";
+import { BaseRecipient } from "../subscription/BaseRecipient";
 import { IComponent, IController, IModel, IView } from "./interface";
 import { ComponentClassesType } from "./types";
 import { SubscribeData, SubscribeEvent } from "../subscription/types";
-export declare class BaseComponent extends BaseSubscription implements IComponent {
+export declare class BaseComponent extends BaseRecipient implements IComponent {
     protected controller?: IController;
     protected model?: IModel;
     protected view?: IView;

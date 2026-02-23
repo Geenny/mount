@@ -1,7 +1,7 @@
 import { StreamComponent } from '../core/components/stream/StreamComponent';
 import { BaseComponent } from '../core/base/construction/component/BaseComponent';
 import { ComponentNameEnum, ComponentTypeEnum } from '../core/components/enums';
-import { SubscribeTypeEnum, SubscribeActionEnum } from '../core/base/construction/subscription/enum';
+import { RecipientTypeEnum, RecipientActionEnum } from '../core/base/construction/recipient/enum';
 
 /**
  * Test suite for StreamComponent.
@@ -48,7 +48,7 @@ describe('StreamComponent', () => {
    * Test: Should register instance via SYSTEM START message
    */
   test('should register instance via SYSTEM START message', () => {
-    streamComponent.onMessage(SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.SYSTEM, RecipientActionEnum.START, {
       instance: mockComponent,
     });
 
@@ -62,7 +62,7 @@ describe('StreamComponent', () => {
    */
   test('should remove instance via SYSTEM STOP message', () => {
     // First register the instance
-    streamComponent.onMessage(SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.SYSTEM, RecipientActionEnum.START, {
       instance: mockComponent,
     });
 
@@ -70,7 +70,7 @@ describe('StreamComponent', () => {
     expect(view?.isExist(mockComponent)).toBe(true);
 
     // Then remove it
-    streamComponent.onMessage(SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.STOP, {
+    streamComponent.onMessage(RecipientTypeEnum.SYSTEM, RecipientActionEnum.STOP, {
       instance: mockComponent,
     });
 
@@ -85,12 +85,12 @@ describe('StreamComponent', () => {
     const mockMethod = jest.fn();
 
     // First register the instance
-    streamComponent.onMessage(SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.SYSTEM, RecipientActionEnum.START, {
       instance: mockComponent,
     });
 
     // Then subscribe to event
-    streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
       instance: mockComponent,
       source: { event, method: mockMethod },
     });
@@ -111,18 +111,18 @@ describe('StreamComponent', () => {
     const mockMethod = jest.fn();
 
     // Register instance
-    streamComponent.onMessage(SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.SYSTEM, RecipientActionEnum.START, {
       instance: mockComponent,
     });
 
     // Subscribe to event
-    streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
       instance: mockComponent,
       source: { event, method: mockMethod },
     });
 
     // Emit data via DATA message
-    streamComponent.onMessage(SubscribeTypeEnum.DATA, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.DATA, RecipientActionEnum.START, {
       instance: mockComponent,
       source: { event, data: testData },
     });
@@ -140,23 +140,23 @@ describe('StreamComponent', () => {
     const mockMethod = jest.fn();
 
     // Register and subscribe
-    streamComponent.onMessage(SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.SYSTEM, RecipientActionEnum.START, {
       instance: mockComponent,
     });
 
-    streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
       instance: mockComponent,
       source: { event, method: mockMethod },
     });
 
     // Unsubscribe
-    streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.STOP, {
+    streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.STOP, {
       instance: mockComponent,
       source: { event, method: mockMethod },
     });
 
     // Emit data - method should not be called
-    streamComponent.onMessage(SubscribeTypeEnum.DATA, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.DATA, RecipientActionEnum.START, {
       instance: mockComponent,
       source: { event, data: { test: true } },
     });
@@ -176,25 +176,25 @@ describe('StreamComponent', () => {
     const mockComponent2 = new BaseComponent();
 
     // Register instances
-    streamComponent.onMessage(SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.SYSTEM, RecipientActionEnum.START, {
       instance: mockComponent,
     });
-    streamComponent.onMessage(SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.SYSTEM, RecipientActionEnum.START, {
       instance: mockComponent2,
     });
 
     // Subscribe both
-    streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
       instance: mockComponent,
       source: { event, method: mockMethod1 },
     });
-    streamComponent.onMessage(SubscribeTypeEnum.SUBSCRIBE, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.SUBSCRIBE, RecipientActionEnum.START, {
       instance: mockComponent2,
       source: { event, method: mockMethod2 },
     });
 
     // Emit data
-    streamComponent.onMessage(SubscribeTypeEnum.DATA, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.DATA, RecipientActionEnum.START, {
       instance: mockComponent,
       source: { event, data: testData },
     });
@@ -210,7 +210,7 @@ describe('StreamComponent', () => {
   test('should reject self-messaging', () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-    streamComponent.onMessage(SubscribeTypeEnum.DATA, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.DATA, RecipientActionEnum.START, {
       instance: streamComponent,
       source: { event: 'test', data: {} },
     });

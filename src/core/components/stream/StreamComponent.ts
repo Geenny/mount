@@ -3,8 +3,8 @@ import { Controller } from "./mvc/Controller";
 import { Model } from "./mvc/Model";
 import { View } from "./mvc/View";
 import { IStreamComponent, IStreamController, IStreamModel, IStreamView } from "./interface";
-import { SubscribeActionEnum, SubscribeTypeEnum } from "core/base/construction/subscription/enum";
-import { SubscribeEvent, SubscribeMessageData } from "core/base/construction/subscription/types";
+import { RecipientActionEnum, RecipientTypeEnum } from "core/base/construction/recipient/enum";
+import { RecipientEvent, RecipientMessageData } from "core/base/construction/recipient/types";
 import { output } from "utils/index";
 
 export class StreamComponent extends BaseComponent implements IStreamComponent {
@@ -25,7 +25,7 @@ export class StreamComponent extends BaseComponent implements IStreamComponent {
     // MESSAGING
     //
 
-    onMessage( type: SubscribeTypeEnum, action: SubscribeActionEnum, data: SubscribeMessageData ): void {
+    onMessage( type: RecipientTypeEnum, action: RecipientActionEnum, data: RecipientMessageData ): void {
         if ( data.instance && data.instance === this ) {
             output.error( this, 'StreamComponent: Cannot send message to self!' );
             return;
@@ -33,38 +33,38 @@ export class StreamComponent extends BaseComponent implements IStreamComponent {
 
         switch ( type ) {
 
-            case SubscribeTypeEnum.SYSTEM:
+            case RecipientTypeEnum.SYSTEM:
                 this.handleSystemMessage( action, data );
                 break;
             
-            case SubscribeTypeEnum.SUBSCRIBE:
+            case RecipientTypeEnum.SUBSCRIBE:
                 this.handleSubscribeMessage( action, data );
                 break;
 
-            case SubscribeTypeEnum.DATA:
+            case RecipientTypeEnum.DATA:
                 this.handleDataMessage( action, data );
                 break;
             
         }
     }
 
-    protected handleSystemMessage( action: SubscribeActionEnum, messageData: SubscribeMessageData ): void {
+    protected handleSystemMessage( action: RecipientActionEnum, messageData: RecipientMessageData ): void {
         const { instance } = messageData;
 
         switch ( action ) {
 
-            case SubscribeActionEnum.START:
+            case RecipientActionEnum.START:
                 this.controller?.instanceAdd( instance );
                 break;
 
-            case SubscribeActionEnum.STOP:
+            case RecipientActionEnum.STOP:
                 this.controller?.instanceRemove( instance );
                 break;
             
         }
     }
 
-    protected handleSubscribeMessage( action: SubscribeActionEnum, messageData: SubscribeMessageData ): void {
+    protected handleSubscribeMessage( action: RecipientActionEnum, messageData: RecipientMessageData ): void {
         const { instance, source } = messageData;
 
         if ( !source ) return;
@@ -75,18 +75,18 @@ export class StreamComponent extends BaseComponent implements IStreamComponent {
 
         switch ( action ) {
 
-            case SubscribeActionEnum.START:
+            case RecipientActionEnum.START:
                 this.controller.stream( instance, event, method );
                 break;
 
-            case SubscribeActionEnum.STOP:
+            case RecipientActionEnum.STOP:
                 this.controller.unstream( instance, event, method );
                 break;
             
         }
     }
 
-    protected handleDataMessage( action: SubscribeActionEnum, messageData: SubscribeMessageData ): void {
+    protected handleDataMessage( action: RecipientActionEnum, messageData: RecipientMessageData ): void {
         const { source } = messageData;
 
         if ( !source ) return;

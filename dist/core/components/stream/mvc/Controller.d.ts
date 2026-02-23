@@ -1,6 +1,6 @@
 import { BaseController } from "core/base/construction/component/BaseController";
 import { IStreamComponent, IStreamController, IStreamModel, IStreamView } from "../interface";
-import { BaseSubscription } from "core/base/construction/subscription/BaseSubscription";
+import { BaseRecipient } from "core/base/construction/subscription/BaseRecipient";
 import { SubscribeEvent } from "core/base/construction/subscription/types";
 export declare class Controller extends BaseController implements IStreamController {
     protected component: IStreamComponent;
@@ -8,8 +8,8 @@ export declare class Controller extends BaseController implements IStreamControl
     protected view: IStreamView;
     constructor(component: IStreamComponent, model: IStreamModel, view: IStreamView);
     emit(event: SubscribeEvent, data: any): void;
-    stream(instance: BaseSubscription, event: SubscribeEvent, method: Function): void;
-    unstream(instance: BaseSubscription, event: SubscribeEvent, method: Function): void;
-    instanceAdd(instance: BaseSubscription): void;
-    instanceRemove(instance: BaseSubscription): void;
+    stream(instance: BaseRecipient, event: SubscribeEvent, method: Function): void;
+    unstream(instance: BaseRecipient, event: SubscribeEvent, method: Function): void;
+    instanceAdd(instance: BaseRecipient): void;
+    instanceRemove(instance: BaseRecipient): void;
 }

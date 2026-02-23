@@ -81,7 +81,7 @@ export class Components extends BaseWorker {
 
         // Защита от зацикливания
         if ( componentsToInit.length === 0 || componentsToInit.length > this.componentConfigPrepareList.length ) {
-            output.error(this, 'Components initialization error: cyclic or broken dependencies detected');
+            output.error( this, 'Components initialization error: cyclic or broken dependencies detected' );
             this.promiseInitStruct?.method.reject?.( new Error( 'Cyclic or broken dependencies detected' ) );
             return;
         }
@@ -102,10 +102,13 @@ export class Components extends BaseWorker {
         const componentStruct = this.componentStructCreateByConfig( config );
         const { component } = componentStruct;
 
-        this.componentSubscribeSet( componentStruct );
+        // Установка компонента в разсылку для зависимых компонентов
+        this.componentRecipientSet( componentStruct );
 
+        // Инициализация компонента (ID, name, params, etc.)
         await component.init( config );
         
+        // Добавление в список компонентов
         this.componentAddToList( componentStruct );
     }
 
@@ -128,23 +131,30 @@ export class Components extends BaseWorker {
         }
     }
 
-    protected componentSubscribeSet( componentStruct: ComponentStructType ): void {
+
+
+    //
+    // COMPONENT MESSGAE RECIPIENT
+    //
+
+    protected componentRecipientSet( componentStruct: ComponentStructType ): void {
         const { component, config } = componentStruct;
-        const subscriptions = this.componentSubscribeSubscriptionsGet( config );
-        if ( subscriptions ) {
-            subscriptions.forEach( ( subscription ) => component.subscriberSet( subscription.name, subscription ) );
-        }
+        const list = this.componentDependentFromCurrentGet( config );
+
+        if ( !list || list.length === 0 ) return;
+        
+        list.forEach( ( recipient ) => component.recipientSet( recipient.name, recipient ) );
     }
 
-    protected componentSubscribeSubscriptionsGet( config: ComponentConfigType ): BaseComponent[] | undefined {
+    protected componentDependentFromCurrentGet( config: ComponentConfigType ): BaseComponent[] | undefined {
         const { dependent } = config;
         if ( !dependent || dependent.length === 0 ) return undefined;
 
-        const subscriptions = this.componentStructList
+        const childrenSubscriberList = this.componentStructList
             .filter( ( componentStruct ) => dependent.find( ( name ) => componentStruct.component.name === name ) )
             .map( ( componentStruct ) => componentStruct.component );
         
-        return subscriptions;
+        return childrenSubscriberList;
     }
 
 

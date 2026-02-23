@@ -1,7 +1,7 @@
 import { StreamSubscribeComponent } from "core/components/subscribe/StreamSubscribeComponent";
 import { INetworkComponent } from "./interface";
-import { Model } from "./mvc/Model";
-import { Controller } from "./mvc/Controller";
+import { Model } from "./mvc/NetworkModel";
+import { Controller } from "./mvc/NetworkController";
 
 /**
  * Network component

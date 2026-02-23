@@ -1,7 +1,7 @@
 import { SystemComponent } from '../core/components/system/SystemComponent';
 import { StreamComponent } from '../core/components/stream/StreamComponent';
 import { ComponentNameEnum, ComponentSystemNameEnum, ComponentTypeEnum } from '../core/components/enums';
-import { SubscribeTypeEnum, SubscribeActionEnum } from '../core/base/construction/subscription/enum';
+import { RecipientTypeEnum, RecipientActionEnum } from '../core/base/construction/recipient/enum';
 import { SYSTEM_EVENT } from '../core/constants';
 import { SystemVisibleDataType, SystemKeyboardDataType, SystemResizeDataType } from '../core/components/system/types';
 
@@ -32,10 +32,10 @@ describe('SystemComponent', () => {
     });
 
     // Set StreamComponent as subscriber
-    systemComponent['subscriberSet'](ComponentNameEnum.STREAM, streamComponent);
+    systemComponent['recipientSet'](ComponentNameEnum.STREAM, streamComponent);
 
     // Register SystemComponent in StreamComponent
-    streamComponent.onMessage(SubscribeTypeEnum.SYSTEM, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.SYSTEM, RecipientActionEnum.START, {
       instance: systemComponent,
     });
 
@@ -67,7 +67,7 @@ describe('SystemComponent', () => {
     const visibilityData: SystemVisibleDataType = { visible: true };
 
     // Emit visibility event through StreamComponent
-    streamComponent.onMessage(SubscribeTypeEnum.DATA, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.DATA, RecipientActionEnum.START, {
       instance: systemComponent,
       source: {
         event: SYSTEM_EVENT.VISIBILITY,
@@ -94,7 +94,7 @@ describe('SystemComponent', () => {
     };
 
     // Emit keyboard event
-    streamComponent.onMessage(SubscribeTypeEnum.DATA, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.DATA, RecipientActionEnum.START, {
       instance: systemComponent,
       source: {
         event: SYSTEM_EVENT.KEYBOARD,
@@ -117,7 +117,7 @@ describe('SystemComponent', () => {
     };
 
     // Emit resize event
-    streamComponent.onMessage(SubscribeTypeEnum.DATA, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.DATA, RecipientActionEnum.START, {
       instance: systemComponent,
       source: {
         event: SYSTEM_EVENT.RESIZE,
@@ -140,7 +140,7 @@ describe('SystemComponent', () => {
     const visibilityData: SystemVisibleDataType = { visible: false };
 
     // Emit event
-    streamComponent.onMessage(SubscribeTypeEnum.DATA, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.DATA, RecipientActionEnum.START, {
       instance: systemComponent,
       source: {
         event: SYSTEM_EVENT.VISIBILITY,
@@ -167,17 +167,17 @@ describe('SystemComponent', () => {
     const resizeData: SystemResizeDataType = { width: 800, height: 600 };
 
     // Emit all events
-    streamComponent.onMessage(SubscribeTypeEnum.DATA, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.DATA, RecipientActionEnum.START, {
       instance: systemComponent,
       source: { event: SYSTEM_EVENT.VISIBILITY, data: visibilityData },
     });
 
-    streamComponent.onMessage(SubscribeTypeEnum.DATA, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.DATA, RecipientActionEnum.START, {
       instance: systemComponent,
       source: { event: SYSTEM_EVENT.KEYBOARD, data: keyboardData },
     });
 
-    streamComponent.onMessage(SubscribeTypeEnum.DATA, SubscribeActionEnum.START, {
+    streamComponent.onMessage(RecipientTypeEnum.DATA, RecipientActionEnum.START, {
       instance: systemComponent,
       source: { event: SYSTEM_EVENT.RESIZE, data: resizeData },
     });

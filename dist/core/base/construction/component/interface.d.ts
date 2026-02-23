@@ -12,7 +12,7 @@ interface IComponent {
     unsubscribe(event: SubscribeEvent, method: Function): void;
     emit(event: SubscribeEvent, data?: SubscribeData): void;
     /**
-     * Messages between @BaseSubscription instances
+     * Messages between @BaseRecipient instances
      * @param type {@SubscribeTypeEnum}
      * @param action {@SubscribeActionEnum}
      * @param data {@SubscribeMessageData}
