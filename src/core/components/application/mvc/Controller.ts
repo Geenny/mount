@@ -1,8 +1,8 @@
 import { BaseController } from "core/base/construction/component/BaseController";
 import { IApplicationComponent, IApplicationController, IApplicationModel, IApplicationView } from "../interface";
-import { SYSTEM_EVENT } from "core/constants";
+import { SYSTEM_EVENT, NETWORK_EVENT } from "core/constants";
 
-export class Controller extends BaseController implements IApplicationController {
+export class ApplicationController extends BaseController implements IApplicationController {
 
     protected component: IApplicationComponent;
     protected model: IApplicationModel;
@@ -41,7 +41,9 @@ export class Controller extends BaseController implements IApplicationController
             console.log( 'RESIZE', data );
         });
 
-        this.emit( NETWORK_EVENT.REQUEST, { serverId: }
+        // setTimeout( () => {
+        //     this.emit( NETWORK_EVENT.REQUEST, { serverId: "server", endpoint: "/health", method: "GET" } );
+        // }, 1000 );
 
     }
 

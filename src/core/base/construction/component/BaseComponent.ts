@@ -46,16 +46,21 @@ export class BaseComponent extends BaseSubscription implements IComponent {
     };
 
     protected createModel(): void {
-        this.model = new this.classes.Model();
+        const ModelClass = this.classes.Model;
+        if ( !ModelClass ) return;
+        this.model = new ModelClass();
     }
 
     protected createView(): void {
-        this.view = new this.classes.View();
+        const ViewClass = this.classes.View;
+        if ( !ViewClass ) return;
+        this.view = new ViewClass();
     }
 
     protected createController(): void {
         if ( !this.model ) throw new Error( 'Model is not created' );
-        this.controller = new this.classes.Controller( this, this.model, this.view );
+        const ControllerClass = this.classes.Controller;
+        this.controller = new ControllerClass( this, this.model, this.view );
     }
 
     protected controllerSet(): void {

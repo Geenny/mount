@@ -1,7 +1,6 @@
 import { StreamSubscribeComponent } from "core/components/subscribe/StreamSubscribeComponent";
 import { INetworkComponent } from "./interface";
 import { Model } from "./mvc/Model";
-import { View } from "./mvc/View";
 import { Controller } from "./mvc/Controller";
 
 /**
@@ -12,8 +11,7 @@ class NetworkComponent extends StreamSubscribeComponent implements INetworkCompo
     
     protected classes = {
         Controller: Controller,
-        Model: Model,
-        View: View
+        Model: Model
     };
 }
 

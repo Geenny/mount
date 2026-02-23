@@ -19,13 +19,14 @@ export const networkComponentsConfig: Record< string, ComponentConfigType > = {
         unique: true,
         instance: NetworkConnectorRequestComponent,
         params: {
-            id: 'api-main',
+            id: 'server',
             host: 'http://localhost:3001',
             type: NetworkConnectionType.HTTP,
+            isDefault: true, // Default connector for requests without serverId
             
             // Health check on init (blocks init until connected)
             healthCheck: {
-                serverId: 'api-main',
+                serverId: 'server',
                 endpoint: '/health',
                 method: NetworkRequestMethod.GET
             },
@@ -65,7 +66,7 @@ export const networkComponentsConfig: Record< string, ComponentConfigType > = {
         unique: true,
         instance: NetworkConnectorSocketComponent,
         params: {
-            id: 'ws-notifications',
+            id: 'socket',
             host: 'ws://localhost:3002',
             type: NetworkConnectionType.WEBSOCKET,
             

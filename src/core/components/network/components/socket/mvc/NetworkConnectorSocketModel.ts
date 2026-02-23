@@ -5,7 +5,7 @@ import { NetworkConnectionStatus } from "../../../enums";
 /**
  * Network connector socket model
  */
-export class NetworkConnectorSocketModel extends BaseModel implements INetworkConnectorSocketModel {
+export class Model extends BaseModel implements INetworkConnectorSocketModel {
     
     get status(): NetworkConnectionStatus {
         return this.data.status || NetworkConnectionStatus.DISCONNECTED;
@@ -33,5 +33,13 @@ export class NetworkConnectorSocketModel extends BaseModel implements INetworkCo
     }
     set pendingRequests( value: Map< string, any > ) {
         this.data.pendingRequests = value;
+    }
+    
+    /**
+     * Check if this connector is default
+     * Used for auto-selection when serverId is not specified
+     */
+    get isDefault(): boolean {
+        return this.data.isDefault || false;
     }
 }

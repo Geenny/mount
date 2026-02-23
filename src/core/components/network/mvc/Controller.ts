@@ -4,7 +4,7 @@ import { NETWORK_EVENT } from "core/constants";
 import { output } from "utils/index";
 import { Storage } from "utils/storage/Storage";
 import { NetworkConnectionRequest, NetworkResponseType, NetworkErrorType } from "../types";
-import { NetworkRequestStatus } from "../enums";
+import { NetworkRequestStatus, NetworkRequestMethod } from "../enums";
 
 /**
  * Network component controller
@@ -75,7 +75,31 @@ export class Controller extends BaseController implements INetworkController {
      * Handle incoming network request
      */
     protected onRequest( requestConfig: any ): void {
-        const { serverId } = requestConfig;
+        let { serverId } = requestConfig;
+        
+        // Auto-select server if not specified
+        if ( !serverId ) {
+            serverId = this.selectDefaultServer();
+            
+            if ( !serverId ) {
+                output.warn( this, 'No server available to handle request', requestConfig );
+                
+                // Emit error
+                const error: NetworkErrorType = {
+                    serverId: '',
+                    requestId: this.generateRequestId(),
+                    request: null as any,
+                    error: new Error( 'No server available. Please specify serverId or configure a default server.' ),
+                    timestamp: Date.now()
+                };
+                this.emit( NETWORK_EVENT.ERROR, error );
+                return;
+            }
+            
+            // Update request config with selected server
+            requestConfig.serverId = serverId;
+            output.log( this, `Auto-selected server: ${ serverId }` );
+        }
         
         // Create connection request object
         const request: NetworkConnectionRequest = {
@@ -179,8 +203,15 @@ export class Controller extends BaseController implements INetworkController {
      * Check if request result is in cache
      */
     protected checkCache( request: NetworkConnectionRequest ): boolean {
+        const serverId = request.config.serverId;
+        
+        // serverId should always be set at this point (auto-selected in onRequest)
+        if ( !serverId ) {
+            return false;
+        }
+        
         const caches = this.model.caches;
-        const cache = caches.get( request.config.serverId );
+        const cache = caches.get( serverId );
         
         if ( !cache ) {
             return false;
@@ -194,7 +225,7 @@ export class Controller extends BaseController implements INetworkController {
             
             // Emit cached response
             const response: NetworkResponseType = {
-                serverId: request.config.serverId,
+                serverId,
                 requestId: request.id,
                 data: cachedData,
                 status: 200,
@@ -271,8 +302,15 @@ export class Controller extends BaseController implements INetworkController {
      * Save response to cache
      */
     protected saveToCache( request: NetworkConnectionRequest, response: NetworkResponseType ): void {
+        const serverId = request.config.serverId;
+        
+        // serverId should always be set at this point
+        if ( !serverId ) {
+            return;
+        }
+        
         const caches = this.model.caches;
-        const cache = caches.get( request.config.serverId );
+        const cache = caches.get( serverId );
         
         if ( !cache ) {
             return;
@@ -288,7 +326,48 @@ export class Controller extends BaseController implements INetworkController {
      * Build cache key from request config
      */
     protected buildCacheKey( config: any ): string {
-        return `${ config.method || 'POST' }_${ config.endpoint }_${ JSON.stringify( config.body || {} ) }`;
+        return `${ config.method || NetworkRequestMethod.POST }_${ config.endpoint }_${ JSON.stringify( config.data || {} ) }`;
+    }
+    
+    /**
+     * Select default server when serverId is not specified
+     * Selection priority:
+     * 1. Connector with isDefault = true
+     * 2. If only one connector exists, use it
+     * 3. First connector in the list
+     * 4. null if no connectors available
+     */
+    protected selectDefaultServer(): string | null {
+        const components = ( this.component as any ).getComponents?.();
+        
+        if ( !components || components.size === 0 ) {
+            return null;
+        }
+        
+        // 1. Search for default connector
+        for ( const connector of components.values() ) {
+            const model = ( connector as any ).model;
+            const params = ( connector as any ).config?.params;
+            
+            if ( model?.isDefault ) {
+                output.log( this, `Found default server: ${ params?.id }` );
+                return params?.id || null;
+            }
+        }
+        
+        // 2. If only one connector, use it
+        if ( components.size === 1 ) {
+            const connector = components.values().next().value;
+            const params = ( connector as any ).config?.params;
+            output.log( this, `Using single available server: ${ params?.id }` );
+            return params?.id || null;
+        }
+        
+        // 3. Take first connector from list
+        const firstConnector = components.values().next().value;
+        const params = ( firstConnector as any ).config?.params;
+        output.warn( this, `No default server configured, using first available: ${ params?.id }` );
+        return params?.id || null;
     }
     
     /**

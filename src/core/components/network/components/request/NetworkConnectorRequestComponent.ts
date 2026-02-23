@@ -1,8 +1,7 @@
 import { StreamSubscribeComponent } from "core/components/subscribe/StreamSubscribeComponent";
 import { INetworkConnectorRequestComponent } from "./interface";
-import { NetworkConnectorRequestController } from "./mvc/Controller";
-import { NetworkConnectorRequestModel } from "./mvc/Model";
-import { NetworkConnectorRequestView } from "./mvc/View";
+import { Controller } from "./mvc/NetworkConnectorRequestController";
+import { Model } from "./mvc/NetworkConnectorRequestModel";
 
 /**
  * Network connector request component
@@ -13,8 +12,7 @@ export class NetworkConnectorRequestComponent extends StreamSubscribeComponent i
     public serverConfig: any;
     
     protected classes = {
-        Controller: NetworkConnectorRequestController,
-        Model: NetworkConnectorRequestModel,
-        View: NetworkConnectorRequestView
+        Controller: Controller,
+        Model: Model
     };
 }

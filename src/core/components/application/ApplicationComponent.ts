@@ -1,7 +1,7 @@
 import { StreamSubscribeComponent } from "../subscribe/StreamSubscribeComponent";
-import { Controller } from "./mvc/Controller";
-import { Model } from "./mvc/Model";
-import { View } from "./mvc/View";
+import { ApplicationController } from "./mvc/Controller";
+import { ApplicationModel } from "./mvc/Model";
+import { ApplicationView } from "./mvc/View";
 import { IApplicationComponent, IApplicationController, IApplicationModel, IApplicationView } from "./interface";
 
 export class ApplicationComponent extends StreamSubscribeComponent implements IApplicationComponent {
@@ -11,9 +11,9 @@ export class ApplicationComponent extends StreamSubscribeComponent implements IA
     protected view?: IApplicationView;
 
     protected classes = {
-        Controller: Controller,
-        Model: Model,
-        View: View
+        Controller: ApplicationController,
+        Model: ApplicationModel,
+        View: ApplicationView
     };
 
     onEvent(event: string, data?: any): void {

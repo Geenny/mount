@@ -10,11 +10,11 @@ import {
  * Network request configuration
  */
 type NetworkRequestType = {
-    serverId: string;
+    serverId?: string; // Optional: auto-selected if omitted
     endpoint: string;
     method?: NetworkRequestMethod;
     headers?: Record< string, string >;
-    body?: any;
+    data?: any; // Данные для POST/PUT/PATCH
     
     // Cache settings
     cache?: boolean;
