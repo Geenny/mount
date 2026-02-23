@@ -7,7 +7,7 @@ import { RecipientActionEnum, RecipientTypeEnum } from "./enum";
  */
 export abstract class BaseRecipient extends BaseWorker {
 
-    #subscriberMap: Map<string, BaseRecipient> = new Map();
+    #recipientMap: Map<string, BaseRecipient> = new Map();
 
 
     //
@@ -18,14 +18,14 @@ export abstract class BaseRecipient extends BaseWorker {
      * Set a @BaseRecipient (as parent) for broadcast messages
      */
     recipientSet( name: string, recipient: BaseRecipient ): void {
-        this.#subscriberMap.set( name, recipient );
+        this.#recipientMap.set( name, recipient );
     }
 
     /**
      * Get a @BaseRecipient by name
      */
     recipientGet( name: string ): BaseRecipient | undefined {
-        return this.#subscriberMap.get( name );
+        return this.#recipientMap.get( name );
     }
 
 
@@ -38,7 +38,7 @@ export abstract class BaseRecipient extends BaseWorker {
     }
 
     protected message( type: RecipientTypeEnum, action: RecipientActionEnum, data: RecipientMessageData ): void {
-        this.#subscriberMap.forEach( ( recipient ) => recipient.onMessage( type, action, data ) );
+        this.#recipientMap.forEach( ( recipient ) => recipient.onMessage( type, action, data ) );
     }
 
 
@@ -50,7 +50,7 @@ export abstract class BaseRecipient extends BaseWorker {
     protected async onDestroy(): Promise<void> {
         await super.onDestroy();
 
-        this.#subscriberMap.clear();
+        this.#recipientMap.clear();
     }
 
 }

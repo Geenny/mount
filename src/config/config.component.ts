@@ -1,12 +1,14 @@
 import { ComponentConfigType } from 'core/components/types';
 import { systemDataConfig } from './system/config.system.component';
-import { networkComponentsConfig } from './network/config.network.components';
+// import { networkComponentsConfig } from './network/config.network.components';
+import { networkComponentsConfig } from './network/config.network2.components';
 import { ComponentNameEnum, ComponentTypeEnum } from 'core/components/enums';
 import {
     ApplicationComponent,
     StreamComponent,
     SystemComponent,
     NetworkComponent,
+    NetworkComponent2,
     CustomComponent
 } from 'core/components';
 
@@ -41,13 +43,21 @@ export const componentsConfig: ComponentConfigType = {
             instance: SystemComponent,
             components: systemDataConfig
         },
+        // [ComponentNameEnum.NETWORK]: {
+        //     name: ComponentNameEnum.NETWORK,
+        //     type: ComponentTypeEnum.SERVICE,
+        //     unique: true,
+        //     instance: NetworkComponent,
+        //     dependent: [ ComponentNameEnum.STREAM, ComponentNameEnum.SYSTEM ],
+        //     components: networkComponentsConfig
+        // },
         [ComponentNameEnum.NETWORK]: {
             name: ComponentNameEnum.NETWORK,
             type: ComponentTypeEnum.SERVICE,
             unique: true,
-            instance: NetworkComponent,
+            instance: NetworkComponent2,
             dependent: [ ComponentNameEnum.STREAM, ComponentNameEnum.SYSTEM ],
             components: networkComponentsConfig
-        }
+        },
     }
 };

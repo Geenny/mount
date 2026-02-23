@@ -11,10 +11,13 @@ Mount is a modular TypeScript engine implementing a component-based architecture
 - **MVC Separation:** Model (data via Proxy) → Controller (logic) → View (presentation)
 - **Dependency Rule:** Model/View only know Controller, never each other
 
-### 2. Event-Driven Communication
+### 2. Messaging and Communication
+- **BaseRecipient:** Core messaging infrastructure with private subscriber management
 - **StreamComponent:** Central event bus for inter-component communication
 - **Publisher/Subscriber:** Components communicate via events, not direct calls
 - **Event Types:** Defined in `core/constants` (SYSTEM_EVENT, NETWORK_EVENT, etc.)
+- **Recipient Pattern:** Parents/dependencies register via `recipientSet()`, accessed via `recipientGet()`
+- **Children Management:** Automatic subscription to SYSTEM messages for add/remove tracking
 
 ### 3. Configuration Pattern
 - **Hierarchical Config:** Components can contain child components
@@ -23,17 +26,32 @@ Mount is a modular TypeScript engine implementing a component-based architecture
 
 ## Component Structure
 
-### Base Components
+### Base Architecture
 
 ```
-BaseComponent
+BaseRecipient (extends BaseWorker)
+│   Core messaging infrastructure
+├── #subscriberMap: Map<string, BaseRecipient> - private subscribers
+├── recipientSet(name, recipient) - register recipient
+├── recipientGet(name) - get recipient by name
+├── message(type, action, data) - broadcast to all subscribers
+└── onMessage(type, action, data) - handle incoming messages
+
+BaseComponent (extends BaseRecipient)
+│   Component with MVC and children management
+├── childrenMap: Map<number, BaseComponent> - child components
+├── onMessage() - filters SYSTEM messages, handles children add/remove
+├── childrenHandle() - process START/STOP actions
+├── childrenAdd() - add child to map
+├── childrenRemove() - remove child from map
+│
 ├── BaseController (extends BaseWorker)
 │   ├── onStart() - initialization logic
 │   ├── onStop() - cleanup logic
 │   └── emit() - publish events
 ├── BaseModel (extends BaseData)
 │   └── data - Proxy-based reactive data
-└── BaseView
+└── BaseView (optional)
     └── controllerSet() - controller linkage
 ```
 
@@ -42,10 +60,18 @@ BaseComponent
 1. **Construction:** `new Component()`
 2. **Configuration:** `configure(config)`
 3. **Initialization:** `init()` → `onInit()`
+   - Creates Model, View, Controller
+   - Sets up MVC linkage
+   - Broadcasts `SYSTEM/START` message to recipients
 4. **Start:** `start()` → `onStart()`
-5. **Work:** Event handling, business logic
+   - Starts View and Controller
+5. **Work:** Event handling, business logic, children management
 6. **Stop:** `stop()` → `onStop()`
+   - Stops View and Controller
 7. **Destroy:** `destroy()` → `onDestroy()`
+   - Broadcasts `SYSTEM/STOP` message to recipients
+   - Cleans up Controller, View
+   - Clears subscriber map
 
 ## NetworkComponent Architecture
 
@@ -175,6 +201,35 @@ components: {
 - NetworkComponent.Controller: queue, cache, routing
 - Connector.Controller: actual HTTP/WS communication
 
+#### 4. BaseRecipient Pattern (Evolved from BaseSubscription)
+**Rationale:** Better encapsulation, automatic children management, simplified parent access
+
+**Key Improvements:**
+- **Private `#subscriberMap`** - Cannot be accidentally modified externally
+- **`recipientGet()`** - Clean API for accessing parents/dependencies
+- **Automatic Children Tracking** - Via SYSTEM messages, no manual management
+- **Scalability** - Handles large numbers of children efficiently
+
+**Before (BaseSubscription):**
+```typescript
+// Manual subscriber management, exposed internal state
+class BaseSubscription {
+    protected subscriberMap = new Map(); // Public
+    // Manual tracking required
+}
+```
+
+**After (BaseRecipient):**
+```typescript
+// Encapsulated, automatic management
+class BaseRecipient {
+    #subscriberMap = new Map(); // Private
+    recipientSet(name, recipient) { /* ... */ }
+    recipientGet(name) { /* ... */ }
+    // Automatic via onMessage() in BaseComponent
+}
+```
+
 ## SystemComponent Architecture
 
 Similar pattern to NetworkComponent but for system-level features:
@@ -188,6 +243,85 @@ SystemComponent
 └── Configuration: config/system/config.system.component.ts
 ```
 
+## Recipient Pattern and Children Management
+
+### BaseRecipient Architecture
+
+**Purpose:** Core messaging infrastructure with private subscriber management for scalable parent-child communication.
+
+**Key Features:**
+- `#subscriberMap` - Private Map of registered recipients (encapsulation)
+- `recipientSet(name, recipient)` - Register a recipient (usually parent or dependency)
+- `recipientGet(name)` - Retrieve recipient by name for communication
+- `message(type, action, data)` - Broadcast message to all registered recipients
+- `onMessage(type, action, data)` - Handle incoming messages (override in subclasses)
+
+### Children Management in BaseComponent
+
+**Automatic Subscription Flow:**
+
+1. **Component Initialization** → Broadcasts `SYSTEM/START` message
+2. **Parent's onMessage()** → Receives message, filters for SYSTEM type
+3. **childrenHandle()** → Processes START action
+4. **childrenAdd()** → Adds component to `childrenMap`
+
+**Removal Flow:**
+
+1. **Component Destroy** → Broadcasts `SYSTEM/STOP` message
+2. **Parent's onMessage()** → Receives message
+3. **childrenHandle()** → Processes STOP action
+4. **childrenRemove()** → Removes component from `childrenMap`
+
+### Recipient Setup via Components Manager
+
+Location: `src/core/components/Components.ts`
+
+```typescript
+protected componentRecipientSet( componentStruct: ComponentStructType ): void {
+    const { component, config } = componentStruct;
+    const list = this.componentDependentFromCurrentGet( config );
+    
+    if ( !list || list.length === 0 ) return;
+    
+    // Register dependencies as recipients
+    list.forEach( ( recipient ) => component.recipientSet( recipient.name, recipient ) );
+}
+```
+
+**Benefits:**
+1. **Encapsulation** - `subscriberMap` is private, cannot be accidentally modified
+2. **Automatic Management** - Children automatically register/unregister via SYSTEM messages
+3. **Scalability** - Works seamlessly with large numbers of children
+4. **Type Safety** - Access parents/dependencies through typed `recipientGet()`
+5. **Clean Separation** - No direct references between siblings
+
+**Example Usage:**
+
+```typescript
+// In a component that needs to access its parent
+class MyComponent extends BaseComponent {
+    
+    protected doSomething(): void {
+        // Get parent StreamComponent
+        const stream = this.recipientGet( 'STREAM' );
+        
+        if ( stream ) {
+            // Use parent
+            stream.emit( MY_EVENT.SOMETHING, data );
+        }
+    }
+    
+    onMessage( type: RecipientTypeEnum, action: RecipientActionEnum, data: any ): void {
+        super.onMessage( type, action, data );
+        
+        // Handle custom messages
+        if ( type === RecipientTypeEnum.DATA ) {
+            // Process data from children or dependencies
+        }
+    }
+}
+```
+
 ## Project Structure
 
 ```
@@ -195,10 +329,21 @@ mount/
 ├── src/
 │   ├── core/
 │   │   ├── base/                    # Base classes
-│   │   │   ├── BaseComponent.ts
-│   │   │   ├── BaseController.ts
-│   │   │   ├── BaseModel.ts
-│   │   │   └── BaseView.ts
+│   │   │   ├── construction/
+│   │   │   │   ├── recipient/       # Messaging infrastructure
+│   │   │   │   │   ├── BaseRecipient.ts
+│   │   │   │   │   ├── types.ts
+│   │   │   │   │   └── enum.ts
+│   │   │   │   ├── component/       # Component base
+│   │   │   │   │   ├── BaseComponent.ts
+│   │   │   │   │   ├── BaseController.ts
+│   │   │   │   │   ├── BaseModel.ts
+│   │   │   │   │   ├── BaseView.ts
+│   │   │   │   │   ├── interface.ts
+│   │   │   │   │   └── types.ts
+│   │   │   │   └── subscription/    # (Legacy - being phased out)
+│   │   │   ├── BaseWorker.ts
+│   │   │   └── BaseData.ts
 │   │   ├── components/              # Main components
 │   │   │   ├── network/
 │   │   │   │   ├── NetworkComponent.ts
@@ -219,7 +364,9 @@ mount/
 │   │   │   ├── system/
 │   │   │   ├── stream/
 │   │   │   ├── application/
+│   │   │   ├── subscribe/           # StreamSubscribeComponent
 │   │   │   └── custom/
+│   │   ├── Components.ts            # Component manager
 │   │   └── constants/               # Event constants
 │   ├── config/                      # Configuration
 │   │   ├── config.component.ts      # Main config
@@ -365,9 +512,16 @@ this.component.unsubscribe(EVENT_NAME, handlerFunction);
 
 ## Performance Considerations
 
+### Recipient Pattern
+- Private `#subscriberMap` prevents accidental modifications
+- Automatic children management reduces manual tracking overhead
+- Efficient Map-based lookups via `recipientGet()`
+- SYSTEM messages filtered early in `onMessage()` 
+
 ### Event System
 - Unsubscribe unused listeners
 - Use event pooling for high-frequency events
+- Children automatically unsubscribe on destroy
 
 ### Network Component
 - Cache enabled by default (configurable)
@@ -377,8 +531,9 @@ this.component.unsubscribe(EVENT_NAME, handlerFunction);
 
 ### Memory Management
 - Components properly destroyed
-- Maps/Sets cleared on cleanup
+- Maps/Sets cleared on cleanup (including `childrenMap`)
 - Event listeners removed
+- Recipient subscribers cleared in `onDestroy()`
 
 ## Future Improvements
 
@@ -406,13 +561,38 @@ this.component.unsubscribe(EVENT_NAME, handlerFunction);
 
 ## References
 
-- **Base Classes:** `src/core/base/`
+- **Base Classes:** `src/core/base/construction/`
+  - **BaseRecipient:** `src/core/base/construction/recipient/BaseRecipient.ts` - Core messaging
+  - **BaseComponent:** `src/core/base/construction/component/BaseComponent.ts` - Component base with MVC
+  - **BaseController/Model/View:** `src/core/base/construction/component/`
 - **Component Pattern:** `src/core/components/system/` (good reference)
+- **Network Component:** `src/core/components/network/` (advanced example with children)
+- **Components Manager:** `src/core/components/Components.ts` - Initialization and dependency management
 - **Configuration:** `src/config/config.component.ts`
 - **Events:** `src/core/constants/`
 - **Tests:** `src/__tests__/`
 
 ## Changelog
+
+### 2026-02-23
+- **BaseRecipient Pattern:** Evolved from BaseSubscription for better encapsulation
+  - Renamed `BaseSubscription` → `BaseRecipient` for clearer semantics
+  - Made `subscriberMap` private (`#subscriberMap`) for encapsulation
+  - Added `recipientGet(name)` for clean parent/dependency access
+  - Automatic children management via SYSTEM messages in BaseComponent
+- **BaseComponent:** Enhanced children tracking
+  - Added `childrenMap: Map<number, BaseComponent>` for child management
+  - Implemented `onMessage()` to handle SYSTEM START/STOP for automatic add/remove
+  - Methods: `childrenHandle()`, `childrenAdd()`, `childrenRemove()`
+  - Simplifies working with large numbers of child components
+- **Components Manager:** Updated recipient setup
+  - `componentRecipientSet()` now registers dependencies via `recipientSet()`
+  - Automatic parent-child relationship establishment during initialization
+- **Benefits:** 
+  - Better encapsulation (private fields)
+  - Automatic children subscription/unsubscription
+  - Cleaner API for accessing parents via `recipientGet()`
+  - Scales better with many children
 
 ### 2026-02-17
 - **NetworkComponent:** Complete refactor to match SystemComponent architecture
@@ -430,6 +610,6 @@ this.component.unsubscribe(EVENT_NAME, handlerFunction);
 
 ---
 
-**Last Updated:** 2026-02-17  
+**Last Updated:** 2026-02-23  
 **Version:** 0.0.92  
 **Maintainer:** a-firsov
