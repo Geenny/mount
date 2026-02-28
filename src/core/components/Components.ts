@@ -269,9 +269,12 @@ export class Components extends BaseWorker {
             }
 
             // Проверка на уникальность имени в списке подготовки и в уже созданных компонентах
-            const isReadyForCreate = unique &&
+            const isReadyAsUnique = unique &&
                 !this.componentConfigPrepareList.find( ( item ) => item.name === config.name ) &&
                 !this.componentStructList.find( ( item ) => item.component.name === config.name );
+
+            // Проверка готовности к созданию
+            const isReadyForCreate = !unique || isReadyAsUnique;
 
             // Добавление в список на создание
             if ( isReadyForCreate )

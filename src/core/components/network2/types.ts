@@ -2,7 +2,7 @@ import {
     NetworkRequestMethodEnum,
     NetworkRequestStatusEnum,
     NetworkConnectionTypeEnum,
-    NetworkConnectionStatusEnum,
+    NetworkCacheStorageEnum,
     NetworkDataTypeEnum
 } from "./enums";
 
@@ -10,6 +10,7 @@ import {
  * Network request configuration
  */
 type NetworkRequestType = {
+    id?: number;
 
     endpoint?: string; // Where to send the request (e.g. /api/data, actions)
 
@@ -46,13 +47,6 @@ type NetworkRequestParamsType = {
     // Data type
     dataType?: NetworkDataTypeEnum;
     
-    // Cache settings
-    // cache?: boolean;
-    
-    // Retry settings
-    // retry?: number; // 0 & -1 = infinite retries
-    // timeout?: number;
-    
     // Priority
     priority?: number; // default 0, higher = earlier
     
@@ -67,14 +61,6 @@ type NetworkRequestAuthType = {
 }
 
 /**
- * Network server cache configuration
- */
-type NetworkServerCacheConfig = {
-    enabled: boolean;
-    ttl?: number; // time to live in ms
-};
-
-/**
  * Network server auth configuration
  */
 type NetworkServerAuthConfig = {
@@ -85,39 +71,10 @@ type NetworkServerAuthConfig = {
     headerPrefix?: string; // default 'Bearer'
 };
 
-/**
- * Network server configuration
- */
-type NetworkServerConfig = {
-    id: string;
-    host: string;
-    type: NetworkConnectionTypeEnum;
-    
-    // Health check on init (blocks init if set)
-    healthCheck?: NetworkRequestType;
-    
-    // Retry settings
-    retry?: number; // -1 = infinite
-    retryDelay?: number; // ms between retries
-    timeout?: number;
-    
-    // Concurrent request limits (HTTP only)
-    maxConcurrent?: number; // default 1
-    
-    // Cache (optional)
-    cache?: NetworkServerCacheConfig;
-    
-    // Auth (optional)
-    auth?: NetworkServerAuthConfig;
-    
-    // Headers
-    headers?: Record< string, string >;
-    
-    // WebSocket settings
-    protocols?: string[];
-    reconnectOnClose?: boolean;
-    heartbeatInterval?: number; // for ping/pong in ms
-};
+type NetworkRequestStructType = {
+    id: number;
+    request: NetworkRequestType;
+}
 
 /**
  * Network connection request (queued request with metadata)
@@ -170,16 +127,64 @@ type NetworkRequestStatsType = {
     queued: number;
 };
 
+/**
+ * Network server configuration
+ */
+type NetworkConnectorType = {
+    server: NetworkConnectorServerType;
+    connection: NetworkConnectorConnectionType;
+    health?: NetworkConnectorHealthType;
+    cache?: NetworkConnectorCacheType;
+    auth?: NetworkConnectorAuthType;
+    headers?: Record< string, string >;
+};
+
+type NetworkConnectorServerType = {
+    host: string;
+    port?: number;
+};
+
+type NetworkConnectorConnectionType = {
+    type: NetworkConnectionTypeEnum;
+    method?: NetworkRequestMethodEnum;
+    retry?: number;
+    retryDelay?: number;
+    timeout?: number;
+    concurrent?: number;
+};
+
+type NetworkConnectorHealthType = {
+    test?: boolean;
+    endpoint?: string;
+    heartbeatInterval?: number;
+};
+
+type NetworkConnectorCacheType = {
+    storage?: NetworkCacheStorageEnum;
+    ttl?: number;
+};
+
+type NetworkConnectorAuthType = {
+    endpoint?: string;
+    headerName?: string;
+    headerPrefix?: string;
+};
+
 export type {
     NetworkRequestType,
     NetworkRequestParamsType,
     NetworkRequestAuthType,
-
-    NetworkServerConfig,
-    NetworkServerCacheConfig,
+    NetworkRequestStructType,
     NetworkServerAuthConfig,
     NetworkConnectionRequest,
     NetworkResponseType,
     NetworkErrorType,
-    NetworkRequestStatsType
+    NetworkRequestStatsType,
+
+    NetworkConnectorType,
+    NetworkConnectorServerType,
+    NetworkConnectorConnectionType,
+    NetworkConnectorHealthType,
+    NetworkConnectorCacheType,
+    NetworkConnectorAuthType
 };

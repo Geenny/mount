@@ -1,13 +1,4 @@
-import { IComponent, IController, IModel, IView } from "core/base/construction/component/interface";
-import { NetworkRequestType, NetworkResponseType, NetworkServerConfig } from "../../types";
-import { NetworkConnectionStatusEnum } from "../../enums";
-
-/**
- * Network connector request component interface
- */
-interface INetworkConnectorRequestComponent extends IComponent {
-    // serverConfig: NetworkServerConfig;
-}
+import { IController, IModel, IView } from "core/base/construction/component/interface";
 
 /**
  * Network connector request model interface
@@ -32,7 +23,6 @@ interface INetworkConnectorRequestView extends IView {
 }
 
 export type {
-    INetworkConnectorRequestComponent,
     INetworkConnectorRequestModel,
     INetworkConnectorRequestController,
     INetworkConnectorRequestView

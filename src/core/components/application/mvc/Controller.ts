@@ -41,9 +41,14 @@ export class ApplicationController extends BaseController implements IApplicatio
             console.log( 'RESIZE', data );
         });
 
-        // setTimeout( () => {
-        //     this.emit( NETWORK_EVENT.REQUEST, { serverId: "server", endpoint: "/health", method: "GET" } );
-        // }, 1000 );
+        setTimeout( () => {
+            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 1" } );
+            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 2" } );
+            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 3" } );
+            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 4" } );
+            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 5" } );
+            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 6" } );
+        }, 1000 );
 
     }
 

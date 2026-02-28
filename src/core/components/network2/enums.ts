@@ -1,3 +1,7 @@
+//
+// NETWORK
+//
+
 /**
  * Network request methods
  */
@@ -34,8 +38,9 @@ enum NetworkConnectionStatusEnum {
  * Network request status
  */
 enum NetworkRequestStatusEnum {
+    UNKNOWN = 'UNKNOWN',                     // Unknown status
     PENDING = 'PENDING',
-    IN_PROGRESS = 'IN_PROGRESS',
+    PROGRESS = 'PROGRESS',
     SUCCESS = 'SUCCESS',
     ERROR = 'ERROR',
     CANCELLED = 'CANCELLED',
@@ -49,10 +54,29 @@ enum NetworkDataTypeEnum {
     ARRAYBUFFER = 'arraybuffer'
 };
 
+enum NetworkCacheStorageEnum {
+    MEMORY = 'MEMORY',
+    LOCAL_STORAGE = 'LOCAL_STORAGE',
+    SESSION_STORAGE = 'SESSION_STORAGE'
+};
+
+//
+// CONNECTOR
+//
+
+enum NetworkConnectorStatusEnum {
+    DISCONNECTED = 'DISCONNECTED',
+    CONNECTING = 'CONNECTING',
+    CONNECTED = 'CONNECTED',
+};
+
 export {
     NetworkRequestMethodEnum,
     NetworkConnectionTypeEnum,
     NetworkConnectionStatusEnum,
     NetworkRequestStatusEnum,
-    NetworkDataTypeEnum
+    NetworkDataTypeEnum,
+    NetworkCacheStorageEnum,
+
+    NetworkConnectorStatusEnum
 };

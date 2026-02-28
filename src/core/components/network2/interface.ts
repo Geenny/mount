@@ -1,11 +1,13 @@
 import { IComponent, IController, IModel, IView } from "core/base/construction/component/interface";
 import { Storage } from "utils/storage/Storage";
-import { NetworkConnectionRequest, NetworkRequestStatsType } from "./types";
+import { NetworkConnectionRequest, NetworkRequestStatsType, NetworkRequestType } from "./types";
 
 /**
  * Network component interface
  */
 interface INetworkComponent extends IComponent {
+
+    connectorGet( request: NetworkRequestType ): INetworkConnector | undefined;
     
 }
 
@@ -35,8 +37,25 @@ interface INetworkController extends IController {
     
 }
 
+interface INetworkConnector {
+
+    readonly isDefault: boolean;
+
+    readonly serverID: string;
+
+    readonly isConnected: boolean;
+
+}
+
+interface IComponentConnector extends IComponent {
+    serverID: string;
+    isDefault?: boolean;
+};
+
 export type {
+    IComponentConnector,
     INetworkComponent,
     INetworkModel,
-    INetworkController
+    INetworkController,
+    INetworkConnector
 };

@@ -1,10 +1,11 @@
 import { BaseModel } from "core/base/construction/component/BaseModel";
 import { INetworkConnectorSocketModel } from "../interface";
+import { NetworkConnectorModel } from "../../connector/mvc/NetworkConnectorModel";
 
 /**
  * Network connector socket model
  */
-export class Model extends BaseModel implements INetworkConnectorSocketModel {
+export class NetworkConnectorSocketModel extends NetworkConnectorModel implements INetworkConnectorSocketModel {
     
     
 }

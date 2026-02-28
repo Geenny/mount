@@ -16,39 +16,46 @@ export const networkComponentsConfig: Record< string, ComponentConfigType > = {
         name: ComponentNetworkNameEnum.CONNECTOR_REQUEST,
         type: ComponentTypeEnum.SERVICE,
         dependent: [ ComponentNameEnum.STREAM ],
-        unique: true,
+        unique: false,
         instance: NetworkConnectorRequestComponent,
         params: {
-            id: 'server',
-            host: 'http://localhost',
-            port: 3001,
-            type: NetworkConnectionType.HTTP,
-            isDefault: true, // Default connector for requests without serverId
-            
+
+            id: 'http',                 // Server ID, it is must be unique
+            isDefault: true,            // Default connector for requests without serverId
+
+            server: {
+                host: 'http://localhost',
+                port: 3001,
+            },
+
+            connection: {
+                type: NetworkConnectionType.HTTP,
+                method: NetworkRequestMethod.POST,
+
+                // Retry settings
+                retry: 3,               // Number of retry attempts, -1 = infinite
+                retryDelay: 1000,
+                timeout: 5000,
+                
+                concurrent: 5,          // Max concurrent requests, HTTP only
+            },
+
             // Health check on init (blocks init until connected)
-            healthCheck: {
-                serverId: 'server',
+            health: {
+                test: true,             // Test connection after onStart
                 endpoint: '/health',
-                method: NetworkRequestMethod.GET
+                heartbeatInterval: 0    // 0 - no heartbeat
             },
             
-            // Retry settings
-            retry: 3,
-            retryDelay: 1000,
-            timeout: 5000,
-            
-            // Max concurrent requests
-            maxConcurrent: 5,
-            
-            // Cache settings
+            // Cache settings, if exist it is enabled
             cache: {
-                enabled: true,
                 storage: NetworkCacheStorage.MEMORY,
                 ttl: 60000 // 1 minute
             },
             
             // Auth settings
             auth: {
+                endpoint: '/auth/refresh',
                 headerName: 'Authorization',
                 headerPrefix: 'Bearer'
             },
@@ -64,22 +71,36 @@ export const networkComponentsConfig: Record< string, ComponentConfigType > = {
         name: ComponentNetworkNameEnum.CONNECTOR_SOCKET,
         type: ComponentTypeEnum.SERVICE,
         dependent: [ ComponentNameEnum.STREAM ],
-        unique: true,
+        unique: false,
         instance: NetworkConnectorSocketComponent,
         params: {
+
             id: 'socket',
-            host: 'ws://localhost:3002',
-            type: NetworkConnectionType.WEBSOCKET,
-            
-            // Retry settings (infinite retries for WebSocket)
-            retry: -1,
-            retryDelay: 2000,
-            timeout: 30000,
+            isDefault: false,
+
+            server: {
+                host: 'ws://localhost',
+                port: 3002
+            },
+
+            connection: {
+                type: NetworkConnectionType.WEBSOCKET,
+
+                // Retry settings
+                retry: 3,
+                retryDelay: 1000,
+                timeout: 5000,
+
+                protocols: [ 'v1.notification.protocol' ],
+            },
+
+            health: {
+                endpoint: undefined,
+                heartbeatInterval: 30000 // 30 seconds
+            },
             
             // WebSocket settings
-            protocols: [ 'v1.notification.protocol' ],
-            reconnectOnClose: true,
-            heartbeatInterval: 30000 // 30 seconds
+            reconnectOnClose: true
         }
     }
 };

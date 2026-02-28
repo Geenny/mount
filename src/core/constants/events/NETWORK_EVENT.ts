@@ -1,4 +1,7 @@
 const NETWORK_EVENT = {
+    // Send NetworkRequestType'd data
+    SEND: 'network.send',
+
     // Request lifecycle
     REQUEST: 'network.request',
     REQUEST_QUEUED: 'network.request.queued',

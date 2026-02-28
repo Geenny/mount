@@ -1,11 +1,10 @@
-import { BaseModel } from "core/base/construction/component/BaseModel";
 import { INetworkConnectorRequestModel } from "../interface";
-import { NetworkConnectionStatusEnum } from "../../../enums";
+import { NetworkConnectorModel } from "../../connector/mvc/NetworkConnectorModel";
 
 /**
  * Network connector request model
  */
-export class Model extends BaseModel implements INetworkConnectorRequestModel {
+export class NetworkConnectorRequestModel extends NetworkConnectorModel implements INetworkConnectorRequestModel {
     
     // get status(): NetworkConnectionStatus {
     //     return this.data.status || NetworkConnectionStatus.DISCONNECTED;

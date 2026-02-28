@@ -10,7 +10,7 @@ import { RecipientActionEnum, RecipientTypeEnum } from "../recipient/enum";
 
 export class BaseComponent extends BaseRecipient implements IComponent {
 
-    protected childrenMap: Map<number, BaseComponent> = new Map();
+    protected childrenList: IComponent[] = [];
 
     protected controller?: IController;
     protected model?: IModel;
@@ -137,20 +137,20 @@ export class BaseComponent extends BaseRecipient implements IComponent {
         if ( instance.ID === undefined || instance.ID <= 0 ) return;
 
         // Check if instance is already a child
-        if ( this.childrenMap.has( instance.ID! ) ) return;
+        if ( this.childrenList.includes( instance ) ) return;
         
-        // Add to children map
-        this.childrenMap.set( instance.ID!, instance );
+        // Add to children list
+        this.childrenList.push( instance );
 
     }
 
     protected childrenRemove( instance: BaseComponent ): void {
 
         // Check if instance is already a child
-        if ( !this.childrenMap.has( instance.ID! ) ) return;
+        if ( !this.childrenList.includes( instance ) ) return;
         
-        // Remove from children map
-        this.childrenMap.delete( instance.ID! );
+        // Remove from children list
+        this.childrenList = this.childrenList.filter( child => child !== instance );
 
     }
 

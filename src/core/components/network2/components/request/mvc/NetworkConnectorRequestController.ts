@@ -1,53 +1,39 @@
-import { BaseController } from "core/base/construction/component/BaseController";
-import { 
-    INetworkConnectorRequestComponent, 
-    INetworkConnectorRequestController, 
-    INetworkConnectorRequestModel, 
-    INetworkConnectorRequestView 
-} from "../interface";
-import { NetworkRequestType, NetworkResponseType, NetworkServerConfig } from "../../../types";
-import { NetworkConnectionStatusEnum, NetworkRequestMethodEnum } from "../../../enums";
-import { NETWORK_EVENT } from "core/constants";
-import { output } from "utils/index";
+import { INetworkConnectorRequestController } from "../interface";
+import { INetworkConnectorComponent, INetworkConnectorModel } from "../../connector/interface";
+import { NetworkConnectorController } from "../../connector/mvc/NetworkConnectorController";
 
 /**
  * Network connector request controller
  * Handles HTTP/HTTPS requests using fetch API
  */
-export class Controller extends BaseController implements INetworkConnectorRequestController {
+export class NetworkConnectorRequestController extends NetworkConnectorController implements INetworkConnectorRequestController {
     
-    protected component: INetworkConnectorRequestComponent;
-    protected model: INetworkConnectorRequestModel;
-    protected view: INetworkConnectorRequestView;
+    protected component: INetworkConnectorComponent;
+    protected model: INetworkConnectorModel;
     
-    // private serverConfig: NetworkServerConfig;
-    
-    constructor( component: INetworkConnectorRequestComponent, model: INetworkConnectorRequestModel, view: INetworkConnectorRequestView ) {
-        super( component, model, view );
+    constructor( component: INetworkConnectorComponent, model: INetworkConnectorModel ) {
+        super( component, model );
         
         this.component = component;
         this.model = model;
-        this.view = view;
-        
-        // this.serverConfig = ( component as any ).config.params;
     }
     
     /**
      * Start connector - listen to requests
      */
-    async onStart(): Promise< void > {
-        // this.subscribeToEvents();
+    // async onStart(): Promise< void > {
+    //     // this.subscribeToEvents();
         
-        // Connect to server (performs health check if configured)
-        // await this.connect();
-    }
+    //     // Connect to server (performs health check if configured)
+    //     // await this.connect();
+    // }
     
     /**
      * Stop connector - disconnect and cleanup
      */
-    async onStop(): Promise< void > {
-        // await this.disconnect();
-    }
+    // async onStop(): Promise< void > {
+    //     // await this.disconnect();
+    // }
     
     // /**
     //  * Subscribe to network events

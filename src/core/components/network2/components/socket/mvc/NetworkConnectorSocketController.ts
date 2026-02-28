@@ -1,54 +1,44 @@
-import { BaseController } from "core/base/construction/component/BaseController";
-import { 
-    INetworkConnectorSocketComponent, 
-    INetworkConnectorSocketController, 
-    INetworkConnectorSocketModel, 
-    INetworkConnectorSocketView 
-} from "../interface";
-import { NetworkRequestType, NetworkResponseType, NetworkServerConfig } from "../../../types";
-import { NETWORK_EVENT } from "core/constants";
-import { output } from "utils/index";
+import { INetworkConnectorSocketController } from "../interface";
+import { INetworkConnectorComponent, INetworkConnectorModel } from "../../connector/interface";
+import { NetworkConnectorController } from "../../connector/mvc/NetworkConnectorController";
 
 /**
  * Network connector socket controller
  * Handles WebSocket connections
  */
-export class Controller extends BaseController implements INetworkConnectorSocketController {
+export class NetworkConnectorSocketController extends NetworkConnectorController implements INetworkConnectorSocketController {
     
-    protected component: INetworkConnectorSocketComponent;
-    protected model: INetworkConnectorSocketModel;
-    protected view: INetworkConnectorSocketView;
+    protected component: INetworkConnectorComponent;
+    protected model: INetworkConnectorModel;
     
-    private serverConfig: NetworkServerConfig;
     private heartbeatTimer: NodeJS.Timeout | null = null;
     private reconnectTimer: NodeJS.Timeout | null = null;
     
-    constructor( component: INetworkConnectorSocketComponent, model: INetworkConnectorSocketModel, view: INetworkConnectorSocketView ) {
-        super( component, model, view );
+    constructor( component: INetworkConnectorComponent, model: INetworkConnectorModel ) {
+
+        super( component, model );
         
         this.component = component;
         this.model = model;
-        this.view = view;
-        
-        this.serverConfig = ( component as any ).config.params;
+
     }
     
     /**
      * Start connector - listen to requests
      */
-    async onStart(): Promise< void > {
-        // this.subscribeToEvents();
+    // async onStart(): Promise< void > {
+    //     // this.subscribeToEvents();
         
-        // Connect to WebSocket server
-        // await this.connect();
-    }
+    //     // Connect to WebSocket server
+    //     // await this.connect();
+    // }
     
     /**
      * Stop connector - disconnect and cleanup
      */
-    async onStop(): Promise< void > {
-        // await this.disconnect();
-    }
+    // async onStop(): Promise< void > {
+    //     // await this.disconnect();
+    // }
     
     // /**
     //  * Subscribe to network events
