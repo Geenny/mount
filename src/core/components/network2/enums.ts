@@ -15,6 +15,13 @@ enum NetworkRequestMethodEnum {
     OPTIONS = 'OPTIONS'
 }
 
+enum NetworkProtocolEnum {
+    HTTP = 'HTTP',
+    HTTPS = 'HTTPS',
+    WS = 'WS',
+    WSS = 'WSS'
+}
+
 /**
  * Network connection types
  */
@@ -38,11 +45,12 @@ enum NetworkConnectionStatusEnum {
  * Network request status
  */
 enum NetworkRequestStatusEnum {
-    UNKNOWN = 'UNKNOWN',                     // Unknown status
+    CREATE = 'CREATE',                     // Unknown status
     PENDING = 'PENDING',
     PROGRESS = 'PROGRESS',
     SUCCESS = 'SUCCESS',
     ERROR = 'ERROR',
+    TIMEOUT = 'TIMEOUT',
     CANCELLED = 'CANCELLED',
     RETRY = 'RETRY'
 }
@@ -72,6 +80,7 @@ enum NetworkConnectorStatusEnum {
 
 export {
     NetworkRequestMethodEnum,
+    NetworkProtocolEnum,
     NetworkConnectionTypeEnum,
     NetworkConnectionStatusEnum,
     NetworkRequestStatusEnum,

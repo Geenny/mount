@@ -6,6 +6,7 @@ import {
     NetworkRequestMethod,
     NetworkCacheStorage 
 } from "core/components/network/enums";
+import { NetworkProtocolEnum } from 'core/components/network2/enums';
 
 /**
  * Network connector components configuration
@@ -24,18 +25,19 @@ export const networkComponentsConfig: Record< string, ComponentConfigType > = {
             isDefault: true,            // Default connector for requests without serverId
 
             server: {
-                host: 'http://localhost',
+                protocol: NetworkProtocolEnum.HTTP,
+                host: 'localhost',
                 port: 3001,
             },
 
             connection: {
                 type: NetworkConnectionType.HTTP,
-                method: NetworkRequestMethod.POST,
+                method: NetworkRequestMethod.GET,
 
                 // Retry settings
                 retry: 3,               // Number of retry attempts, -1 = infinite
                 retryDelay: 1000,
-                timeout: 5000,
+                timeout: 10000,
                 
                 concurrent: 5,          // Max concurrent requests, HTTP only
             },

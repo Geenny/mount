@@ -48,6 +48,10 @@ export class ApplicationController extends BaseController implements IApplicatio
             this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 4" } );
             this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 5" } );
             this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 6" } );
+            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 7" } );
+            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 8" } );
+            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 9" } );
+            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 10" } );
         }, 1000 );
 
     }

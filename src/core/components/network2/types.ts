@@ -20,20 +20,26 @@ type NetworkRequestType = {
 
     headers?: Record< string, string >; // Custom headers for this request
 
-    params?: NetworkRequestParamsType; // Additional params (cache, retry, priority, etc.)
+    params?: Record< string, any >; // Additional params
+
+    options?: NetworkRequestOptionsType; // Additional options (cache, retry, priority, etc.)
 
     auth?: NetworkRequestAuthType; // Optional auth params
 };
 
 type NetworkRequestHandlersType = {
 
-    onProgress?: ( progress: number ) => void; // Progress callback for uploads/downloads
+    onProgress?: ( request: NetworkRequestType ) => void; // Progress callback for uploads/downloads
 
     onStatus?: ( status: NetworkRequestStatusEnum ) => void; // Status change callback
 
+    onSuccess?: ( request: NetworkRequestType ) => void; // Success callback
+
+    onError?: ( request: NetworkRequestType, error?: Error ) => void; // Error callback
+
 };
 
-type NetworkRequestParamsType = {
+type NetworkRequestOptionsType = {
 
     // Optional server ID || generated automatically if omitted
     serverID?: string;
@@ -73,7 +79,28 @@ type NetworkServerAuthConfig = {
 
 type NetworkRequestStructType = {
     id: number;
+    status: NetworkRequestStatusEnum;
+
+    // Request Config
+    url: string;
     request: NetworkRequestType;
+    headers: Record< string, string >;
+    method: NetworkRequestMethodEnum;
+
+    progress: number; // 0 to 1
+
+    connectorUnit: any; // actual connector instance (e.g. XMLHttpRequest, WebSocket or custom loader)
+
+    priority: number;
+
+    retry: number;
+    retryDelay: number;
+
+    data?: any;
+
+    timeout?: NodeJS.Timeout;
+
+    error?: Error;
 }
 
 /**
@@ -142,6 +169,7 @@ type NetworkConnectorType = {
 type NetworkConnectorServerType = {
     host: string;
     port?: number;
+    protocol?: string; // http || https || ws || wss
 };
 
 type NetworkConnectorConnectionType = {
@@ -172,7 +200,7 @@ type NetworkConnectorAuthType = {
 
 export type {
     NetworkRequestType,
-    NetworkRequestParamsType,
+    NetworkRequestOptionsType,
     NetworkRequestAuthType,
     NetworkRequestStructType,
     NetworkServerAuthConfig,

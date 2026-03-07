@@ -1,14 +1,12 @@
 import { BaseController } from "core/base/construction/component/BaseController";
-import {
-    INetworkConnectorController,
-    INetworkConnectorModel
-} from "../interface";
+import { INetworkConnectorController, INetworkConnectorModel } from "../interface";
 import { INetworkConnectorComponent } from "../interface";
 import { RecipientEvent } from "core/base/construction/recipient/types";
 import { NetworkRequestStructType, NetworkRequestType } from "../../../types";
 import { Unique } from "utils/unique/Unique";
 import { output } from "utils/index";
-import { NetworkRequestMethodEnum } from "core/components/network2/enums";
+import { NetworkConnectorStatusEnum, NetworkProtocolEnum, NetworkRequestMethodEnum, NetworkRequestStatusEnum } from "core/components/network2/enums";
+import { PromiseMethodType } from "core/base/types";
 
 /**
  * Network connector request controller
@@ -27,27 +25,6 @@ export class NetworkConnectorController extends BaseController implements INetwo
         this.component = component;
         this.model = model;
     }
-    
-    /**
-     * Start connector - listen to requests
-     */
-    async onStart(): Promise< void > {
-        await super.onStart();
-
-        this.model;
-
-        // this.subscribeToEvents();
-        
-        // Connect to server (performs health check if configured)
-        // await this.connect();
-    }
-    
-    /**
-     * Stop connector - disconnect and cleanup
-     */
-    async onStop(): Promise< void > {
-        // await this.disconnect();
-    }
 
 
     //
@@ -55,7 +32,63 @@ export class NetworkConnectorController extends BaseController implements INetwo
     //
 
     get concurrent(): number {
-        return this.model?.connection?.concurrent ? this.model.connection.concurrent : 1;
+        return this.model?.connection?.concurrent ?? 1;
+    }
+
+    get timeout(): number {
+        return this.model?.connection?.timeout ?? 30000;
+    }
+
+    get retry(): number {
+        return this.model?.connection?.retry ?? 0;
+    }
+
+    get retryDelay(): number {
+        return this.model?.connection?.retryDelay ?? 100;
+    }
+
+
+    //
+    // LIFECYCLE
+    //
+    
+    /**
+     * Start connector - listen to requests
+     */
+    async onStart(): Promise< void > {
+        await super.onStart();
+        await this.connect();
+    }
+    
+    /**
+     * Stop connector - disconnect and cleanup
+     */
+    async onStop(): Promise< void > {
+        await super.onStop();
+        await this.disconnect();
+    }
+
+
+    //
+    // CONNECT
+    //
+
+    async connect(): Promise< void > {
+        if ( this.component.isConnected ) return;
+
+        return new Promise( ( resolve, reject ) => {
+            this.model.status = NetworkConnectorStatusEnum.CONNECTED;
+            resolve();
+        });
+    }
+
+    async disconnect(): Promise< void > {
+        if ( !this.component.isConnected ) return;
+
+        return new Promise( ( resolve, reject ) => {
+            this.model.status = NetworkConnectorStatusEnum.DISCONNECTED;
+            resolve();
+        });
     }
 
 
@@ -67,11 +100,7 @@ export class NetworkConnectorController extends BaseController implements INetwo
     onEvent( event: RecipientEvent, request: NetworkRequestType ): void {
         if ( event !== "send" ) return;
 
-        const requestStruct = this.requestFormat( request );
-
-        this.requestToQueueAdd( requestStruct );
-
-        this.requestNext();
+        this.request( request );
     }
 
 
@@ -79,65 +108,335 @@ export class NetworkConnectorController extends BaseController implements INetwo
     // REQUEST
     //
 
-    protected requestFormat( request: NetworkRequestType ): NetworkRequestStructType {
-        // Add unique ID to request for tracking
-        const id = this.requestUnique.next();
+    protected request( request: NetworkRequestType ): void {
+        const requestStruct = this.requestStructGet( request );
 
-        // Params
-        request.params = request.params || {};
+        this.requestToQueueAdd( requestStruct );
 
-        // Priority
-        request.params.priority = request.params.priority || 0;
-
-        // Method
-        request.params.method = request.params.method || this.model.connection.method || NetworkRequestMethodEnum.GET;
-
-        // Headers
-        const headers = this.model.headers || {};
-        request.params.headers = request.params.headers || {};
-        // Merge headers from model and request
-        request.params.headers = { ...headers, ...request.params.headers };
-
-        this.model;
-
-        debugger;
-
-        return { id, request };
-    }
-
-    protected requestToQueueAdd( requestStruct: NetworkRequestStructType ): void {
-        this.model.queue.push( requestStruct );
-        this.model.queue.sort( ( a, b ) => (b.request.params?.priority || 0) - (a.request.params?.priority || 0) );
+        this.requestNext();
     }
 
     protected requestNext(): void {
 
         // No requests in queue
-        if ( this.model.queue.length === 0 ) return;
+        if ( this.model.queue.length <= 0 ) return;
 
         // Check concurrent limit
         if ( this.model.queuePending.length >= this.concurrent ) return;
 
+        // Move next request from queue to pending
         const requestStruct = this.model.queue.shift();
-        if ( !requestStruct ) {
-            output.warn( this.component, "Failed to retrieve request from queue", requestStruct );
-            return;
+        if ( requestStruct ) {
+            this.requestPendingAdd( requestStruct );
+            this.requestPendingAll();
         }
 
-        this.requestPendingAdd( requestStruct );
-
-        this.requestPendingNext();
-
+        // Process next request in queue
         this.requestNext();
 
     }
 
+    protected requestToQueueAdd( requestStruct: NetworkRequestStructType ): void {
+        this.model.queue.push( requestStruct );
+        this.model.queue.sort( ( struct1, struct2 ) => struct2.priority - struct1.priority );
+    }
+
+
+
+    //
+    // STATUS
+    //
+
+    protected requestStatus( requestStruct: NetworkRequestStructType, status: NetworkRequestStatusEnum ): void {
+        if ( requestStruct.status === status ) return;
+        requestStruct.status = status;
+        this.requestOnStatus( requestStruct );
+    }
+
+
+
+    //
+    // PENDING
+    //
+
     protected requestPendingAdd( requestStruct: NetworkRequestStructType ): void {
         this.model.queuePending.push( requestStruct );
     }
-
-    protected requestPendingNext(): void {
-        // Process pending requests (send to server)
+    protected requestPendingRemove( requestStruct: NetworkRequestStructType ): void {
+        while ( true ) {
+            const index = this.model.queuePending.findIndex( struct => struct === requestStruct );
+            if ( index === -1 ) break;
+            this.model.queuePending.splice( index, 1 );
+        }
     }
 
+    protected requestPendingAll(): void {
+        if ( this.model.queuePending.length <= 0 ) return;
+
+        const requestStructStartList = this.model.queuePending.filter( struct => struct.status === NetworkRequestStatusEnum.CREATE );
+
+        while ( requestStructStartList.length > 0 ) {
+            const struct = requestStructStartList.shift();
+            if ( !struct ) continue;
+            this.requestStatus( struct, NetworkRequestStatusEnum.PENDING );
+            this.requestPendingToSend( struct );
+        }
+    }
+
+    protected requestPendingToSend( requestStruct: NetworkRequestStructType ): void {
+        if ( !this.component.isConnected ) return;
+
+        // Just PENDING requests can be sent
+        if ( requestStruct.status !== NetworkRequestStatusEnum.PENDING ) {
+            debugger;
+            output.warn( this.component, `Request ${ requestStruct.id } is not pending and cannot be sent` );
+            return;
+        }
+
+        requestStruct.timeout = this.requestPendingTimeoutCreate( requestStruct );
+
+        this.requestSend( requestStruct );
+    }
+
+    protected requestPendingTimeoutCreate( requestStruct: NetworkRequestStructType ): NodeJS.Timeout {
+        return setTimeout( this.requestSendTimeout.bind( this ), this.timeout, requestStruct );
+    }
+    protected requestTimeoutClear( requestStruct: NetworkRequestStructType ): void {
+        if ( !requestStruct.timeout ) return;
+        clearTimeout( requestStruct.timeout );
+        requestStruct.timeout = undefined;
+    }
+
+
+
+    //
+    // RETRY
+    //
+
+    protected requestRetry( requestStruct: NetworkRequestStructType ): boolean {
+        if ( requestStruct.retry <= 0 ) return false;
+
+        requestStruct.retry -= 1;
+        this.requestStatus( requestStruct, NetworkRequestStatusEnum.RETRY );
+        requestStruct.timeout = this.requestRetryTimeoutCreate( requestStruct );
+
+        return true;
+    }
+    protected requestRetryToPending( requestStruct: NetworkRequestStructType ): void {
+        this.requestTimeoutClear( requestStruct );
+        this.requestStatus( requestStruct, NetworkRequestStatusEnum.PENDING );
+        this.requestPendingToSend( requestStruct );
+    }
+
+    protected requestRetryTimeoutCreate( requestStruct: NetworkRequestStructType ): NodeJS.Timeout {
+        return setTimeout( this.requestRetryToPending.bind( this ), this.retryDelay, requestStruct );
+    }
+
+
+
+    //
+    // SEND
+    //
+
+    protected requestSend( requestStruct: NetworkRequestStructType ): void {
+        output.log( this.component, `Sending request NO RELEASION ${ requestStruct.id }:`, requestStruct );
+    }
+
+    protected requestSendStart( requestStruct: NetworkRequestStructType ): void {
+        this.requestStatus( requestStruct, NetworkRequestStatusEnum.PROGRESS );
+    }
+
+    protected requestSendProgress( requestStruct: NetworkRequestStructType ): void {
+        if ( requestStruct.status !== NetworkRequestStatusEnum.PROGRESS ) return;
+        this.requestOn( requestStruct );
+    }
+
+    protected requestSendSuccess( requestStruct: NetworkRequestStructType, response: any ): void {
+        this.requestTimeoutClear( requestStruct );
+
+        requestStruct.status = NetworkRequestStatusEnum.SUCCESS;
+
+        // Handle methods
+        this.requestConnectorUnitClear( requestStruct );
+        this.requestPendingRemove( requestStruct );
+        this.requestOn( requestStruct );
+
+        this.requestNext();
+    }
+
+    protected requestSendError( requestStruct: NetworkRequestStructType, error: Error ): void {
+        this.requestTimeoutClear( requestStruct );
+
+        if ( this.requestRetry( requestStruct ) ) return;
+        
+        requestStruct.status = NetworkRequestStatusEnum.ERROR;
+        requestStruct.error = error;
+
+        // Handle methods
+        this.requestConnectorUnitClear( requestStruct );
+        this.requestPendingRemove( requestStruct );
+        this.requestOn( requestStruct );
+        
+        output.warn( this.component, `Request ${ requestStruct.id } failed:`, requestStruct, error );
+
+        // Next request
+        this.requestNext();
+    }
+
+    /**
+     * Stop pending by TIMEOUT. Timeout not handle retry
+     * @param { NetworkRequestStructType } requestStruct 
+     */
+    protected requestSendTimeout( requestStruct: NetworkRequestStructType ): void {
+        this.requestTimeoutClear( requestStruct );
+        
+        requestStruct.status = NetworkRequestStatusEnum.TIMEOUT;
+
+        // Handle methods
+        this.requestConnectorUnitClear( requestStruct );
+        this.requestPendingRemove( requestStruct );
+        this.requestOn( requestStruct );
+        
+        output.warn( this.component, `Request ${ requestStruct.id } timed out:`, requestStruct );
+
+        // Next request
+        this.requestNext();
+    }
+
+
+
+    //
+    // RESULT
+    //
+
+    protected requestOn( requestStruct: NetworkRequestStructType ): void {
+        const { status, error } = requestStruct;
+
+        if ( status === NetworkRequestStatusEnum.PROGRESS ) {
+            this.requestOnProgress( requestStruct );
+        }
+
+        if ( status === NetworkRequestStatusEnum.ERROR || status === NetworkRequestStatusEnum.TIMEOUT ) {
+            this.requestOnStatus( requestStruct );
+            this.requestOnError( requestStruct, error );
+        }
+
+        if ( status === NetworkRequestStatusEnum.SUCCESS ) {
+            this.requestOnStatus( requestStruct );
+            this.requestOnSuccess( requestStruct );
+        }
+    }
+
+    protected requestOnStatus( requestStruct: NetworkRequestStructType ): void {
+        const { status, request } = requestStruct;
+        if ( !request ) debugger;
+        request.handlers?.onStatus?.( status );
+    }
+
+    protected requestOnProgress( requestStruct: NetworkRequestStructType ): void {
+        const { status, request, error } = requestStruct;
+        if ( status !== NetworkRequestStatusEnum.PROGRESS ) return;
+        request.handlers?.onProgress?.( request );
+    }
+
+    protected requestOnSuccess( requestStruct: NetworkRequestStructType ): void {
+        const { status, request } = requestStruct;
+        if ( status !== NetworkRequestStatusEnum.SUCCESS ) return;
+        request.handlers?.onSuccess?.( request );
+    }
+
+    protected requestOnError( requestStruct: NetworkRequestStructType, error?: Error ): void {
+        const { status, request } = requestStruct;
+        if ( status !== NetworkRequestStatusEnum.ERROR && status !== NetworkRequestStatusEnum.TIMEOUT ) return;
+        request.handlers?.onError?.( request, error );
+    }
+
+
+
+
+
+    //
+    // REQUEST STRUCT
+    //
+
+    protected requestStructGet( request: NetworkRequestType ): NetworkRequestStructType {
+        // Get data from request
+        const data = request.data || {};
+
+        // Add unique ID to request for tracking
+        const id = this.requestUnique.next();
+
+        // URL stringify
+        const url = this.requestStructURLGet( request );
+
+        // Headers for request
+        const headers = this.requestStructHeadersGet( request );
+
+        // HTTP method @NetworkRequestMethodEnum
+        const method = this.requestStructMethodGet( request );
+
+        // Priority { number }
+        const priority = this.requestStructPriorityGet( request );
+
+        // Status
+        const status = NetworkRequestStatusEnum.CREATE;
+
+        // Progress
+        const progress = 0;
+
+        // Retry
+        const retry = this.retry;
+        const retryDelay = this.retryDelay;
+
+        // Connector Unit
+        const connectorUnit = this.requestConnectorUnitGet();
+
+        return { id, status, request, url, priority, method, headers, progress, data, retry, retryDelay, connectorUnit };
+    }
+
+    protected requestStructURLGet( request: NetworkRequestType ): string {
+        let protocol = this.requestStructProtocolGet( request );
+        let host = this.model.server.host;
+        let port = this.model.server.port ? `:${ this.model.server.port }` : "";
+        let endpoint = request.endpoint || "";
+        if ( endpoint && !endpoint.startsWith( "/" ) ) endpoint = `/${ endpoint }`;
+
+        return `${ protocol }://${ host }${ port }${ endpoint }`;
+    }
+
+    protected requestStructProtocolGet( request: NetworkRequestType ): string {
+        switch ( this.model.server.protocol ) {
+            case NetworkProtocolEnum.WS: return "ws";
+            case NetworkProtocolEnum.WSS: return "wss";
+            case NetworkProtocolEnum.HTTPS: return "https";
+            default: return "http";
+        }
+    }
+
+    protected requestStructPriorityGet( request: NetworkRequestType ): number {
+        return request.options?.priority || 0;
+    }
+
+    protected requestStructMethodGet( request: NetworkRequestType ): NetworkRequestMethodEnum {
+        return request.options?.method || this.model.connection.method || NetworkRequestMethodEnum.GET;
+    }
+
+    protected requestStructHeadersGet( request: NetworkRequestType ): Record< string, string > {
+        const serverHeaders = this.model.headers || {};
+        const requestHeaders = request.options?.headers || {};
+        return { ...requestHeaders, ...serverHeaders };
+    }
+
+
+
+    //
+    // CONNECTOR UNIT
+    //
+
+    protected requestConnectorUnitGet(): any {
+        return null;
+    }
+    protected requestConnectorUnitClear( requestStruct: NetworkRequestStructType ): void {
+        // Clear connector unit (e.g. abort XMLHttpRequest or close WebSocket)
+    }
 }
