@@ -7,5 +7,7 @@ import { NetworkConnectorModel } from "../../connector/mvc/NetworkConnectorModel
  */
 export class NetworkConnectorSocketModel extends NetworkConnectorModel implements INetworkConnectorSocketModel {
     
+    get websocket(): WebSocket | undefined { return this.data.websocket; }
+    set websocket( value: WebSocket | undefined ) { this.data.websocket = value; }
     
 }

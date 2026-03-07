@@ -44,9 +44,14 @@ export const networkComponentsConfig: Record< string, ComponentConfigType > = {
 
             // Health check on init (blocks init until connected)
             health: {
-                test: true,             // Test connection after onStart
-                endpoint: '/health',
-                heartbeatInterval: 0    // 0 - no heartbeat
+                test: false,                // Test connection after onStart
+                heartbeatInterval: 60000,   // less 1000 - no heartbeat
+                request: {
+                    endpoint: '/health',
+                    headers: {
+                        "Access-Control-Allow-Origin": "*"
+                    }
+                }
             },
             
             // Cache settings, if exist it is enabled
@@ -57,7 +62,9 @@ export const networkComponentsConfig: Record< string, ComponentConfigType > = {
             
             // Auth settings
             auth: {
-                endpoint: '/auth/refresh',
+                request: {
+                    endpoint: '/auth/refresh',
+                },
                 headerName: 'Authorization',
                 headerPrefix: 'Bearer'
             },
@@ -81,8 +88,10 @@ export const networkComponentsConfig: Record< string, ComponentConfigType > = {
             isDefault: false,
 
             server: {
-                host: 'ws://localhost',
-                port: 3002
+                protocol: NetworkProtocolEnum.WS,
+                host: 'localhost',
+                port: 3002,
+                protocols: [ 'v1.notification.protocol' ] // for WebSocket subprotocols
             },
 
             connection: {
@@ -97,8 +106,12 @@ export const networkComponentsConfig: Record< string, ComponentConfigType > = {
             },
 
             health: {
-                endpoint: undefined,
-                heartbeatInterval: 30000 // 30 seconds
+                heartbeatInterval: 10000,   // 10 seconds
+                request: {
+                    data: {
+                        type: 'PING'
+                    }
+                }
             },
             
             // WebSocket settings

@@ -13,9 +13,9 @@ export class NetworkConnectorRequestComponent extends NetworkConnectorComponent 
         Model: NetworkConnectorRequestModel
     };
 
-    protected async onStart(): Promise<void> {
-        await super.onStart();
-        // this.controller
-    }
+    // protected async onStart(): Promise<void> {
+    //     await super.onStart();
+    //     // this.controller
+    // }
 
 }

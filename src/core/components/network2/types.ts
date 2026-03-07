@@ -170,6 +170,7 @@ type NetworkConnectorServerType = {
     host: string;
     port?: number;
     protocol?: string; // http || https || ws || wss
+    protocols?: string | string[]; // for WebSocket subprotocols
 };
 
 type NetworkConnectorConnectionType = {
@@ -183,8 +184,8 @@ type NetworkConnectorConnectionType = {
 
 type NetworkConnectorHealthType = {
     test?: boolean;
-    endpoint?: string;
     heartbeatInterval?: number;
+    request?: NetworkRequestType;
 };
 
 type NetworkConnectorCacheType = {
@@ -193,7 +194,7 @@ type NetworkConnectorCacheType = {
 };
 
 type NetworkConnectorAuthType = {
-    endpoint?: string;
+    request?: string;
     headerName?: string;
     headerPrefix?: string;
 };

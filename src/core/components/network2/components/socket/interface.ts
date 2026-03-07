@@ -1,28 +1,23 @@
 import { IController, IModel, IView } from "core/base/construction/component/interface";
+import { INetworkConnectorController, INetworkConnectorModel } from "../connector/interface";
 
 /**
  * Network connector socket model interface
  */
-interface INetworkConnectorSocketModel extends IModel {
+interface INetworkConnectorSocketModel extends INetworkConnectorModel {
+
+    websocket?: WebSocket;
 
 }
 
 /**
  * Network connector socket controller interface
  */
-interface INetworkConnectorSocketController extends IController {
-    
-}
-
-/**
- * Network connector socket view interface
- */
-interface INetworkConnectorSocketView extends IView {
+interface INetworkConnectorSocketController extends INetworkConnectorController {
     
 }
 
 export type {
     INetworkConnectorSocketModel,
-    INetworkConnectorSocketController,
-    INetworkConnectorSocketView
+    INetworkConnectorSocketController
 };

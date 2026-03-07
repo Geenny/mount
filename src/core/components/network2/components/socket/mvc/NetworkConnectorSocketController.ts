@@ -1,6 +1,10 @@
-import { INetworkConnectorSocketController } from "../interface";
+import { INetworkConnectorSocketController, INetworkConnectorSocketModel } from "../interface";
 import { INetworkConnectorComponent, INetworkConnectorModel } from "../../connector/interface";
 import { NetworkConnectorController } from "../../connector/mvc/NetworkConnectorController";
+import { NetworkRequestStructType } from "core/components/network2/types";
+import { PromiseMethodType, PromiseStructType } from "core/base/types";
+import { NetworkConnectorStatusEnum } from "core/components/network2/enums";
+import { output } from "utils/index";
 
 /**
  * Network connector socket controller
@@ -9,10 +13,12 @@ import { NetworkConnectorController } from "../../connector/mvc/NetworkConnector
 export class NetworkConnectorSocketController extends NetworkConnectorController implements INetworkConnectorSocketController {
     
     protected component: INetworkConnectorComponent;
-    protected model: INetworkConnectorModel;
+    protected model: INetworkConnectorSocketModel;
     
     private heartbeatTimer: NodeJS.Timeout | null = null;
     private reconnectTimer: NodeJS.Timeout | null = null;
+    private promiseConnectStruct?: PromiseStructType;
+    private promiseDisconnectStruct?: PromiseStructType;
     
     constructor( component: INetworkConnectorComponent, model: INetworkConnectorModel ) {
 
@@ -22,6 +28,189 @@ export class NetworkConnectorSocketController extends NetworkConnectorController
         this.model = model;
 
     }
+
+
+    //
+    // GETTERS
+    //
+
+    get concurrent(): number {
+        return 1;   // WebSocket is single connection, so concurrent requests are not supported
+    }
+
+
+
+    //
+    // CONNECT
+    //
+
+    async connect(): Promise<void> {
+        this.promiseConnectStruct = this.promiseConnectStruct ||
+            this.promiseStructGet( () => this.requestConnectorUnitGet() );
+
+        return this.promiseConnectStruct.promise;
+    }
+
+    async disconnect(): Promise<void> {
+        if ( this.model.status === NetworkConnectorStatusEnum.DISCONNECTED )
+            return Promise.resolve();
+
+        this.promiseDisconnectStruct = this.promiseDisconnectStruct ||
+            this.promiseStructGet( () => {
+                this.healthTimeoutClear();
+                this.webSocketClose();
+            } );
+    
+        return this.promiseDisconnectStruct.promise;
+    }
+
+    protected promiseStructGet( method?: Function ): PromiseStructType {
+        const methods: PromiseMethodType = { resolve: () => {} };
+        const promise = new Promise<void>( ( resolve, reject ) => {
+            methods.resolve = resolve;
+            methods.reject = reject;
+
+            method?.();
+        });
+
+        return { promise, method: methods };
+    }
+    
+    protected promiseConnectStructResolve(): void {
+        if ( !this.promiseConnectStruct ) return;
+        this.promiseConnectStruct.method.resolve();
+        this.promiseConnectStruct = undefined;
+    }
+    protected promiseConnectStructReject( error: Error ): void {
+        if ( !this.promiseConnectStruct ) return;
+        this.promiseConnectStruct.method.reject?.( error );
+        this.promiseConnectStruct = undefined;
+    }
+
+    protected promiseDisconnectStructResolve(): void {
+        if ( !this.promiseDisconnectStruct ) return;
+        this.promiseDisconnectStruct.method.resolve();
+        this.promiseDisconnectStruct = undefined;
+    }
+    protected promiseDisconnectStructReject( error: Error ): void {
+        if ( !this.promiseDisconnectStruct ) return;
+        this.promiseDisconnectStruct.method.reject?.( error );
+        this.promiseDisconnectStruct = undefined;
+    }
+
+
+    //
+    // REQUEST SEND
+    //
+    
+    protected requestSend( requestStruct: NetworkRequestStructType ): void {
+        const { data, connectorUnit } = requestStruct;
+
+        if ( !connectorUnit || !( connectorUnit instanceof WebSocket ) ) {
+            output.error( this.component, `Unsupported connector unit for request:`, requestStruct );
+            this.requestOnError( requestStruct, new Error( 'Unsupported connector unit' ) );
+            return;
+        }
+
+        // Send request
+        try {
+            connectorUnit.send( this.requestDataFormat( data ) );
+        } catch ( error ) {
+            output.error( this.component, `Request send error:`, error );
+        }
+    }
+
+
+
+    //
+    // REQUEST DATA FORMAT
+    //
+
+    protected requestDataFormat( data: any ): string {
+        if ( !data ) return '';
+
+        if ( typeof data === 'string' )
+            return data;
+
+        if ( typeof data === 'object' )
+            return JSON.stringify( data );
+
+        return String( data );
+    }
+
+
+
+
+    //
+    // CONNECTOR UNIT
+    //
+
+    protected requestConnectorUnitGet(): WebSocket {
+        if ( this.model.websocket ) return this.model.websocket;
+
+        const url = this.requestStructURLGet();
+
+        // Create WebSocket connection
+        const socket = new WebSocket( url, this.server.protocols );
+        
+        // Subscribe to socket events
+        this.webSocketSubscribe( socket );
+
+        // Store socket in model
+        this.model.websocket = socket;
+
+        return socket;
+    }
+
+    protected webSocketSubscribe( socket: WebSocket ): void {
+        if ( !socket ) return;
+        socket.onopen = ( event: Event ) => this.requestSocketOpen( event );
+        socket.onerror = ( event: Event ) => this.requestSocketError( event );
+        socket.onclose = ( event: CloseEvent ) => this.requestSocketClose( event );
+        socket.onmessage = ( event: MessageEvent ) => this.requestSocketMessage( event );
+    }
+    protected webSocketUnsubscribe( socket: WebSocket ): void {
+        if ( !socket ) return;
+        socket.onopen = null;
+        socket.onmessage = null;
+        socket.onerror = null;
+        socket.onclose = null;
+    }
+    protected webSocketClose(): void {
+        const socket = this.model.websocket;
+        if ( !socket ) return;
+        socket.close();
+    }
+
+
+
+    protected requestSocketOpen( event: Event ): void {
+        this.model.status = NetworkConnectorStatusEnum.CONNECTED;
+        this.promiseConnectStructResolve();
+        output.log( this.component, `WebSocket connection opened`, event );
+    }
+
+    protected requestSocketMessage( event: MessageEvent ): void {
+        const requestStruct = this.model.queuePending[ 0 ];
+        if ( requestStruct )
+            this.requestSendSuccess( requestStruct, event.data );
+        
+        // this.emit()
+    }
+
+    protected requestSocketError( event: Event ): void {
+        output.warn( this.component, `WebSocket error:`, event );
+    }
+
+    protected requestSocketClose( event: CloseEvent ): void {
+        this.model.status = NetworkConnectorStatusEnum.DISCONNECTED;
+        this.promiseDisconnectStructResolve();
+        output.warn( this.component, `WebSocket closed: ${ event.code } ${ event.reason }` );
+    }
+
+
+
+
     
     /**
      * Start connector - listen to requests

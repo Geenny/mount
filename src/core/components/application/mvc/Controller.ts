@@ -44,15 +44,19 @@ export class ApplicationController extends BaseController implements IApplicatio
         setTimeout( () => {
             this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 1" } );
             this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 2" } );
-            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 3" } );
-            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 4" } );
-            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 5" } );
-            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 6" } );
-            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 7" } );
-            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 8" } );
-            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 9" } );
-            this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 10" } );
+            // this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 3" } );
+            // this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 4" } );
+            // this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 5" } );
+            // this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 6" } );
+            // this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 7" } );
+            // this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 8" } );
+            // this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 9" } );
+            // this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: "Some message 10" } );
         }, 1000 );
+
+        // setInterval( () => {
+        //     this.emit( NETWORK_EVENT.SEND, { endpoint: "/health", data: { a: 1, b: 2 } } );
+        // }, 1000 );
 
     }
 

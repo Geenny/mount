@@ -22,14 +22,12 @@ export class NetworkConnectorRequestController extends NetworkConnectorControlle
 
 
 
-
-
     //
     // REQUEST SEND
     //
     
     protected requestSend( requestStruct: NetworkRequestStructType ): void {
-        const { url, method, headers, data, connectorUnit } = requestStruct;
+        const { data, connectorUnit } = requestStruct;
 
         if ( !connectorUnit || !( connectorUnit instanceof XMLHttpRequest ) ) {
             output.error( this.component, `Unsupported connector unit for request:`, requestStruct );
@@ -41,22 +39,16 @@ export class NetworkConnectorRequestController extends NetworkConnectorControlle
         this.requestSendConnectorUnitSubscribe( connectorUnit, requestStruct );
 
         // WithCredentials for cookies
-        // connectorUnit.withCredentials = true; // for cookies
+        this.requestSendWithCredentialsSet( requestStruct );
 
         // Timeout
-        if ( this.timeout > 0 ) connectorUnit.timeout = this.timeout;
+        this.requestSendTimeoutSet( requestStruct );
 
         // Open connection
-        connectorUnit.open( method, url, true );
+        this.requestSendOpen( requestStruct );
 
         // Set headers
-        if ( headers ) {
-            for ( const key in headers ) {
-                if ( headers.hasOwnProperty( key ) ) {
-                    connectorUnit.setRequestHeader( key, headers[ key ] );
-                }
-            }
-        }
+        this.requestSendHeadersSet( requestStruct );
 
         // Send request
         try {
@@ -65,6 +57,52 @@ export class NetworkConnectorRequestController extends NetworkConnectorControlle
             output.error( this.component, `Request send error:`, error );
         }
     }
+
+
+    //
+    // REQUEST WITH CREDENTIALS
+    //
+
+    protected requestSendWithCredentialsSet( requestStruct: NetworkRequestStructType ): void {
+        const { connectorUnit } = requestStruct;
+        // connectorUnit.withCredentials = true; // for cookies
+    }
+
+
+    //
+    // REQUEST TIMEOUT
+    //
+
+    protected requestSendTimeoutSet( requestStruct: NetworkRequestStructType ): void {
+        const { connectorUnit } = requestStruct;
+        if ( this.timeout > 0 ) connectorUnit.timeout = this.timeout;
+    }
+
+
+    //
+    // REQUEST OPEN
+    //
+
+    protected requestSendOpen( requestStruct: NetworkRequestStructType ): void {
+        const { connectorUnit, method, url } = requestStruct;
+        connectorUnit.open( method, url, true );
+    }
+
+
+    //
+    // REQUEST HEADERS
+    //
+
+    protected requestSendHeadersSet( requestStruct: NetworkRequestStructType ): void {
+        const { connectorUnit, headers } = requestStruct;
+        if ( !headers ) return;
+        for ( const key in headers ) {
+            if ( headers.hasOwnProperty( key ) ) {
+                connectorUnit.setRequestHeader( key, headers[ key ] );
+            }
+        }
+    }
+
 
 
     //
@@ -79,6 +117,7 @@ export class NetworkConnectorRequestController extends NetworkConnectorControlle
         const { connectorUnit } = requestStruct;
         if ( !connectorUnit || !( connectorUnit instanceof XMLHttpRequest ) ) return;
         connectorUnit.onreadystatechange = null;
+        connectorUnit.onloadstart = null;
         connectorUnit.onerror = null;
         connectorUnit.onabort = null;
         connectorUnit.ontimeout = null;
@@ -87,7 +126,10 @@ export class NetworkConnectorRequestController extends NetworkConnectorControlle
     }
 
     protected requestSendConnectorUnitSubscribe( xhr: XMLHttpRequest, requestStruct: NetworkRequestStructType ): void {
-        xhr.onreadystatechange = () => this.requestSendStart( requestStruct );
+        xhr.onreadystatechange = (data) => {
+            // console.log( 'readyState', xhr.readyState, xhr.status, xhr.statusText );
+        };
+        xhr.onloadstart = () => this.requestSendStart( requestStruct );
         xhr.onerror = ( event: ProgressEvent ) => this.requestSendError( requestStruct, new Error( event.toString() ) );
         xhr.onabort = () => this.requestSendError( requestStruct, new Error( 'Request aborted' ) );
         xhr.ontimeout = () => this.requestSendTimeout( requestStruct );
