@@ -1,11 +1,12 @@
 import { IComponent, IController, IModel, IView } from "core/base/construction/component/interface";
-import { Storage } from "utils/storage/Storage";
-import { NetworkConnectionRequest, NetworkStatsType } from "./types";
+import { NetworkConnectionRequest, NetworkRequestStatsType, NetworkRequestType } from "./types";
 
 /**
  * Network component interface
  */
 interface INetworkComponent extends IComponent {
+
+    connectorGet( request: NetworkRequestType ): INetworkConnector | undefined;
     
 }
 
@@ -13,17 +14,19 @@ interface INetworkComponent extends IComponent {
  * Network model interface
  */
 interface INetworkModel extends IModel {
-    // Request queues (serverId -> queue)
-    requestQueues: Map< string, NetworkConnectionRequest[] >;
+
+    // // Request queues (serverId -> queue)
+    // requestQueues: Map< string, NetworkConnectionRequest[] >;
     
-    // Active requests (requestId -> request)
-    activeRequests: Map< string, NetworkConnectionRequest >;
+    // // Active requests (requestId -> request)
+    // activeRequests: Map< string, NetworkConnectionRequest >;
     
-    // Caches (serverId -> storage)
-    caches: Map< string, Storage >;
+    // // Caches (serverId -> storage)
+    // caches: Map< string, Storage >;
     
-    // Statistics
-    stats: NetworkStatsType;
+    // // Statistics
+    // stats: NetworkRequestStatsType;
+
 }
 
 /**
@@ -33,16 +36,25 @@ interface INetworkController extends IController {
     
 }
 
-/**
- * Network view interface
- */
-interface INetworkView extends IView {
-    
+interface INetworkConnector {
+
+    readonly isDefault: boolean;
+
+    readonly serverID: string;
+
+    readonly isConnected: boolean;
+
 }
 
+interface IComponentConnector extends IComponent {
+    serverID: string;
+    isDefault?: boolean;
+};
+
 export type {
+    IComponentConnector,
     INetworkComponent,
     INetworkModel,
     INetworkController,
-    INetworkView
+    INetworkConnector
 };

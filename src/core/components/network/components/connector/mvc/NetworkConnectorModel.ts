@@ -1,6 +1,6 @@
 import { BaseModel } from "core/base/construction/component/BaseModel";
 import { INetworkConnectorModel } from "../interface";
-import { NetworkConnectorStatusEnum } from "core/components/network2/enums";
+import { NetworkConnectorStatusEnum } from "core/components/network/enums";
 import {
     NetworkConnectorServerType,
     NetworkConnectorConnectionType,
@@ -8,7 +8,7 @@ import {
     NetworkConnectorCacheType,
     NetworkConnectorAuthType,
     NetworkRequestStructType
-} from "core/components/network2/types";
+} from "core/components/network/types";
 
 export class NetworkConnectorModel extends BaseModel implements INetworkConnectorModel {
 

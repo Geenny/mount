@@ -1,7 +1,11 @@
+//
+// NETWORK
+//
+
 /**
  * Network request methods
  */
-enum NetworkRequestMethod {
+enum NetworkRequestMethodEnum {
     GET = 'GET',
     POST = 'POST',
     PUT = 'PUT',
@@ -11,10 +15,17 @@ enum NetworkRequestMethod {
     OPTIONS = 'OPTIONS'
 }
 
+enum NetworkProtocolEnum {
+    HTTP = 'HTTP',
+    HTTPS = 'HTTPS',
+    WS = 'WS',
+    WSS = 'WSS'
+}
+
 /**
  * Network connection types
  */
-enum NetworkConnectionType {
+enum NetworkConnectionTypeEnum {
     HTTP = 'HTTP',
     WEBSOCKET = 'WEBSOCKET'
 }
@@ -22,7 +33,7 @@ enum NetworkConnectionType {
 /**
  * Network connection status
  */
-enum NetworkConnectionStatus {
+enum NetworkConnectionStatusEnum {
     DISCONNECTED = 'DISCONNECTED',
     CONNECTING = 'CONNECTING',
     CONNECTED = 'CONNECTED',
@@ -31,41 +42,50 @@ enum NetworkConnectionStatus {
 }
 
 /**
- * Network request priority levels
- */
-enum NetworkRequestPriority {
-    LOW = 0,
-    NORMAL = 5,
-    HIGH = 10,
-    CRITICAL = 20
-}
-
-/**
  * Network request status
  */
-enum NetworkRequestStatus {
+enum NetworkRequestStatusEnum {
+    CREATE = 'CREATE',                     // Unknown status
     PENDING = 'PENDING',
-    IN_PROGRESS = 'IN_PROGRESS',
+    PROGRESS = 'PROGRESS',
     SUCCESS = 'SUCCESS',
     ERROR = 'ERROR',
+    TIMEOUT = 'TIMEOUT',
     CANCELLED = 'CANCELLED',
     RETRY = 'RETRY'
 }
 
-/**
- * Storage types for cache
- */
-enum NetworkCacheStorage {
-    MEMORY = 'memory',
-    LOCAL_STORAGE = 'localStorage',
-    SESSION_STORAGE = 'sessionStorage'
-}
+enum NetworkDataTypeEnum {
+    JSON = 'json',
+    TEXT = 'text',
+    BLOB = 'blob',
+    ARRAYBUFFER = 'arraybuffer'
+};
+
+enum NetworkCacheStorageEnum {
+    MEMORY = 'MEMORY',
+    LOCAL_STORAGE = 'LOCAL_STORAGE',
+    SESSION_STORAGE = 'SESSION_STORAGE'
+};
+
+//
+// CONNECTOR
+//
+
+enum NetworkConnectorStatusEnum {
+    DISCONNECTED = 'DISCONNECTED',
+    CONNECTING = 'CONNECTING',
+    CONNECTED = 'CONNECTED',
+};
 
 export {
-    NetworkRequestMethod,
-    NetworkConnectionType,
-    NetworkConnectionStatus,
-    NetworkRequestPriority,
-    NetworkRequestStatus,
-    NetworkCacheStorage
+    NetworkRequestMethodEnum,
+    NetworkProtocolEnum,
+    NetworkConnectionTypeEnum,
+    NetworkConnectionStatusEnum,
+    NetworkRequestStatusEnum,
+    NetworkDataTypeEnum,
+    NetworkCacheStorageEnum,
+
+    NetworkConnectorStatusEnum
 };

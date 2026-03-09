@@ -1,65 +1,74 @@
 import { StreamSubscribeComponent } from "core/components/subscribe/StreamSubscribeComponent";
-import { ConfigType } from "core/base/types";
-import { INetworkConnectorComponent } from "./interface";
-import { NetworkServerConfig, NetworkRequestType, NetworkResponseType } from "../../types";
-import { NetworkConnectionStatus } from "../../enums";
+import { INetworkConnectorComponent, INetworkConnectorController, INetworkConnectorModel } from "./interface";
+import { NetworkConnectorStatusEnum } from "../../enums";
+import { RecipientTypeEnum, RecipientActionEnum } from "core/base/construction/recipient/enum";
+import { RecipientData } from "core/base/construction/recipient/types";
+import { NetworkConnectorModel } from "./mvc/NetworkConnectorModel";
+import { NetworkConnectorController } from "./mvc/NetworkConnectorController";
 
 /**
  * Abstract network connector component
  * Base class for HTTP and WebSocket connectors
  */
-abstract class NetworkConnectorComponent extends StreamSubscribeComponent implements INetworkConnectorComponent {
+export abstract class NetworkConnectorComponent extends StreamSubscribeComponent implements INetworkConnectorComponent {
     
-    public serverConfig: NetworkServerConfig;
-    protected status: NetworkConnectionStatus = NetworkConnectionStatus.DISCONNECTED;
-    
-    constructor( serverConfig: NetworkServerConfig ) {
-        super();
+    #status: NetworkConnectorStatusEnum = NetworkConnectorStatusEnum.DISCONNECTED;
+
+    protected controller?: INetworkConnectorController;
+    protected model?: INetworkConnectorModel;
         
-        this.serverConfig = serverConfig;
+    protected classes = {
+        Controller: NetworkConnectorController,
+        Model: NetworkConnectorModel
+    };
+
+
+    //
+    // GETTERS
+    //
+
+    get serverID(): string { return this.model?.id || "N/A"; }
+
+    get isDefault(): boolean { return !!this.model?.isDefault; }
+
+    /**
+     * Check if connector is connected
+     */
+    get isConnected(): boolean {
+        return this.status === NetworkConnectorStatusEnum.CONNECTED;
     }
-    
-    /**
-     * Establish connection to server
-     */
-    abstract connect(): Promise< void >;
-    
-    /**
-     * Close connection to server
-     */
-    abstract disconnect(): Promise< void >;
-    
-    /**
-     * Send request through this connector
-     */
-    abstract send( request: NetworkRequestType ): Promise< NetworkResponseType >;
+
+
+    //
+    // MESSAGE
+    //
+
+    onMessage(type: RecipientTypeEnum, action: RecipientActionEnum, data: RecipientData): void {
+        super.onMessage( type, action, data );
+
+        this.messageHandle( type, action, data );
+    }
+
+    protected messageHandle( type: RecipientTypeEnum, action: RecipientActionEnum, data: RecipientData ): void {
+        if ( type !== RecipientTypeEnum.DATA ) return;
+        if ( action !== RecipientActionEnum.START ) return;
+
+        const { event, data: request } = data.source;
+
+        this.controller?.onEvent( event, request );
+    }
+
+
+
+    //
+    // STATUS
+    //
     
     /**
      * Get current connection status
      */
-    getStatus(): NetworkConnectionStatus {
-        return this.status;
+    get status(): NetworkConnectorStatusEnum {
+        return this.model?.status || NetworkConnectorStatusEnum.DISCONNECTED;
     }
-    
-    /**
-     * Check if connector is connected
-     */
-    isConnected(): boolean {
-        return this.status === NetworkConnectionStatus.CONNECTED;
-    }
-    
-    /**
-     * Update connection status and emit event
-     */
-    protected setStatus( status: NetworkConnectionStatus ): void {
-        this.status = status;
-        
-        // Emit status change event через stream
-        this.emit( `network.status.${ this.serverConfig.id }`, { 
-            serverId: this.serverConfig.id,
-            status 
-        } );
-    }
-}
 
-export { NetworkConnectorComponent };
+}

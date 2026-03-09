@@ -1,52 +1,56 @@
-import { output } from 'utils/index';
+import { output, PromiseManager, TimeoutManager } from 'utils/index';
 import { BaseConfig } from './BaseConfig';
 import { ConfigType } from './types';
 
 export abstract class BaseInit extends BaseConfig {
-  protected _isInit = false;
 
-  public get isInit(): boolean {
-    return this._isInit;
-  }
+	protected promiseManager = new PromiseManager();
+	protected timeoutManager = new TimeoutManager();
 
-  public get isDestroyed(): boolean {
-    return !this._isInit;
-  }
+	protected _isInit = false;
 
-  async init( config?: ConfigType ): Promise<void> {
-    if ( this.isInit ) {
-      await this.destroy();
-      this._isInit = false;
-    }
+	public get isInit(): boolean {
+		return this._isInit;
+	}
 
-    this.configure( config );
+	public get isDestroyed(): boolean {
+		return !this._isInit;
+	}
 
-    if ( this.isConfigApproved ) {
-      await this.onInit();
-      this._isInit = true;
-    } else {
-      output.error( this, 'Configuration not approved:', this.config );
-    }
-  }
+	async init( config?: ConfigType ): Promise<void> {
+		if ( this.isInit ) {
+			await this.destroy();
+			this._isInit = false;
+		}
 
-  async destroy(): Promise<void> {
-    if ( !this.isInit ) {
-      output.warn( this, 'Cannot destroy: not initialized' );
-      return;
-    }
-    
-    await this.onDestroy();
+		this.configure( config );
 
-    this.unconfigure();
+		if ( this.isConfigApproved ) {
+			await this.onInit();
+			this._isInit = true;
+		} else {
+			output.error( this, 'Configuration not approved:', this.config );
+		}
+	}
 
-    this._isInit = false;
-  }
+	async destroy(): Promise<void> {
+		if ( !this.isInit ) {
+			output.warn( this, 'Cannot destroy: not initialized' );
+			return;
+		}
+		
+		await this.onDestroy();
 
-  protected async onInit(): Promise<void> {
-    // Логика при инициализации
-  }
+		this.unconfigure();
 
-  protected async onDestroy(): Promise<void> {
-    // Логика при уничтожении
-  }
+		this._isInit = false;
+	}
+
+	protected async onInit(): Promise<void> {
+		// Логика при инициализации
+	}
+
+	protected async onDestroy(): Promise<void> {
+		// Логика при уничтожении
+	}
 }

@@ -1,28 +1,38 @@
-import { BaseWorker, PromiseStructType, PromiseMethodType } from "core/base";
+import { BaseWorker } from "core/base";
 import { ComponentConfigType, ComponentStructType, ComponentName } from "./types";
-import { output } from "utils/index";
+import { output, storage, Storage } from "utils/index";
 import { Unique } from "utils/unique/Unique";
 import { BaseComponent } from "core/base/construction/component/BaseComponent";
 import { DEFAULT } from "core/constants/default/DEFAULT";
 import { ComponentTypeEnum } from "./enums";
 
 export class Components extends BaseWorker {
+    protected storage: Storage;
+
     protected uniqueIDGen: Unique = new Unique( 1 );
-    protected uniguieNameGen: Unique = new Unique( 1 );
+    protected uniqueNameGen: Unique = new Unique( 1 );
 
     protected config: ComponentConfigType = { name: DEFAULT.COMPONENT_NAME, type: ComponentTypeEnum.COMPONENT };
 
     protected componentConfigPrepareList: ComponentConfigType[] = [];
     protected componentStructList: ComponentStructType[] = [];
 
-    // Promises
-    protected promiseInitStruct?: PromiseStructType;
-    protected promiseStartStruct?: PromiseStructType;
+    constructor() {
+        super();
+
+        this.storage = storage;
+    }
+
+
+
+    //
+    // LIFECYCLE
+    //
 
     protected async onInit(): Promise<void> {
-        if ( this.promiseInitStruct ) {
-            output.log(this, 'Components initialization already in progress, awaiting...');
-            return this.promiseInitStruct.promise;
+        if ( this.promiseManager.get( 'INIT' ) ) {
+            output.log( this, 'Components initialization already in progress, awaiting...' );
+            return this.promiseManager.get( 'INIT' ) as Promise< void >;
         }
 
         await super.onInit();
@@ -48,15 +58,7 @@ export class Components extends BaseWorker {
     }
 
     protected promiseInitCreate(): Promise<void> {
-        const methods: PromiseMethodType = { resolve: () => {} };
-        const promise = new Promise<void>( ( resolve, reject ) => {
-            methods.resolve = resolve;
-            methods.reject = reject;
-        });
-
-        this.promiseInitStruct = { promise, method: methods };
-
-        return promise;
+        return this.promiseManager.create( 'INIT' );
     }
 
     protected componentStructCreateByConfig( config: ComponentConfigType ): ComponentStructType {
@@ -74,15 +76,14 @@ export class Components extends BaseWorker {
 
         // Если нечего инициализировать или все готово
         if ( componentsToInit.length === 0 && this.componentConfigPrepareList.length === 0 ) {
-            this.promiseInitStruct?.method.resolve();
-            this.promiseInitStruct = undefined;
+            this.promiseManager.resolve( 'INIT' );
             return;
         }
 
         // Защита от зацикливания
         if ( componentsToInit.length === 0 || componentsToInit.length > this.componentConfigPrepareList.length ) {
             output.error( this, 'Components initialization error: cyclic or broken dependencies detected' );
-            this.promiseInitStruct?.method.reject?.( new Error( 'Cyclic or broken dependencies detected' ) );
+            this.promiseManager.reject( 'INIT', new Error( 'Cyclic or broken dependencies detected' ) );
             return;
         }
 
@@ -189,15 +190,7 @@ export class Components extends BaseWorker {
     }
 
     protected promiseStartCreate(): Promise<void> {
-        const methods: PromiseMethodType = { resolve: () => {} };
-        const promise = new Promise<void>( ( resolve, reject ) => {
-            methods.resolve = resolve;
-            methods.reject = reject;
-        });
-
-        this.promiseStartStruct = { promise, method: methods };
-
-        return promise;
+        return this.promiseManager.create( 'START' );
     }
 
     /**
@@ -208,8 +201,7 @@ export class Components extends BaseWorker {
 
         // Если все запущены
         if ( componentsToStart.length === 0 ) {
-            this.promiseStartStruct?.method.resolve();
-            this.promiseStartStruct = undefined;
+            this.promiseManager.resolve( 'START' );
             return;
         }
 
@@ -299,7 +291,7 @@ export class Components extends BaseWorker {
         clone.ID = this.uniqueIDGen.next();
 
         // By default
-        if ( !clone.hasOwnProperty( 'name' ) ) clone.name = `${DEFAULT.COMPONENT_NAME}${this.uniguieNameGen.next()}`;
+        if ( !clone.hasOwnProperty( 'name' ) ) clone.name = `${ DEFAULT.COMPONENT_NAME }${ this.uniqueNameGen.next() }`;
         if ( !clone.hasOwnProperty( 'unique' ) ) clone.unique = false;
         if ( !clone.hasOwnProperty( 'syncStart' ) ) clone.syncStart = true;
 

@@ -5,8 +5,10 @@ import { RecipientEvent } from "core/base/construction/recipient/types";
 import { NetworkConnectorHealthType, NetworkConnectorServerType, NetworkRequestStructType, NetworkRequestType } from "../../../types";
 import { Unique } from "utils/unique/Unique";
 import { output } from "utils/index";
-import { NetworkConnectorStatusEnum, NetworkProtocolEnum, NetworkRequestMethodEnum, NetworkRequestStatusEnum } from "core/components/network2/enums";
-import { PromiseMethodType } from "core/base/types";
+import { NetworkConnectorStatusEnum, NetworkProtocolEnum, NetworkRequestMethodEnum, NetworkRequestStatusEnum } from "core/components/network/enums";
+
+const HEALTH_CHECK = "HEALTH_CHECK";
+const HEALTH_CHECK_TIMEOUT = "HEALTH_CHECK_TIMEOUT";
 
 /**
  * Network connector request controller
@@ -208,12 +210,16 @@ export class NetworkConnectorController extends BaseController implements INetwo
     }
 
     protected requestPendingTimeoutCreate( requestStruct: NetworkRequestStructType ): NodeJS.Timeout {
-        return setTimeout( this.requestSendTimeout.bind( this ), this.timeout, requestStruct );
+        // return setTimeout( this.requestSendTimeout.bind( this ), this.timeout, requestStruct );
+        const timeoutName = `REQUEST_TIMEOUT_${ requestStruct.id }`;
+        return this.timeoutManager.set( timeoutName, this.requestSendTimeout.bind( this ), this.timeout, requestStruct );
     }
     protected requestTimeoutClear( requestStruct: NetworkRequestStructType ): void {
-        if ( !requestStruct.timeout ) return;
-        clearTimeout( requestStruct.timeout );
-        requestStruct.timeout = undefined;
+        // if ( !requestStruct.timeout ) return;
+        // clearTimeout( requestStruct.timeout );
+        // requestStruct.timeout = undefined;
+        const timeoutName = `REQUEST_TIMEOUT_${ requestStruct.id }`;
+        this.timeoutManager.clear( timeoutName );
     }
 
 
@@ -238,7 +244,10 @@ export class NetworkConnectorController extends BaseController implements INetwo
     }
 
     protected requestRetryTimeoutCreate( requestStruct: NetworkRequestStructType ): NodeJS.Timeout {
-        return setTimeout( this.requestRetryToPending.bind( this ), this.retryDelay, requestStruct );
+        // return setTimeout( this.requestRetryToPending.bind( this ), this.retryDelay, requestStruct );
+        const timeoutName = `REQUEST_TIMEOUT_${ requestStruct.id }`;
+        return this.timeoutManager.set( timeoutName, this.requestRetryToPending.bind( this ), this.retryDelay, requestStruct );
+
     }
 
 
@@ -442,9 +451,7 @@ export class NetworkConnectorController extends BaseController implements INetwo
     // HEALTH
     //
 
-    protected healthTimeout?: number;
     protected healthTimeoutDelay = 5000;
-    protected healthPromise?: PromiseMethodType;
 
     protected async healthCheck(): Promise< void > {
         if ( !this.model.health ) return Promise.resolve();
@@ -457,16 +464,11 @@ export class NetworkConnectorController extends BaseController implements INetwo
             onError: this.healthOnError.bind( this ),
         };
 
-        return new Promise( ( resolve, reject ) => {
-            this.healthPromise = { resolve, reject };
-            this.request( request );
-        } );
+        return this.promiseManager.create( HEALTH_CHECK, () => this.request( request ) );
     }
 
     protected healthPromiseResolve(): void {
-        if ( !this.healthPromise ) return;
-        this.healthPromise.resolve();
-        this.healthPromise = undefined;
+        this.promiseManager.resolve( HEALTH_CHECK );
     }
 
     protected healthOnSuccess(): void {
@@ -484,20 +486,18 @@ export class NetworkConnectorController extends BaseController implements INetwo
     }
 
     protected healthHeartbeatStart(): void {
-        if ( this.healthTimeout ) return;
+        if ( this.timeoutManager.get( HEALTH_CHECK_TIMEOUT ) ) return;
 
         this.healthTimeoutSet( this.healthCheck.bind( this ), this.model.health?.heartbeatInterval || this.healthTimeoutDelay );
     }
 
     protected healthTimeoutSet( method: Function, delay: number ): void {
         this.healthTimeoutClear();
-        this.healthTimeout = setTimeout( method, delay );
+        this.timeoutManager.set( HEALTH_CHECK_TIMEOUT, method, delay );
     }
 
     protected healthTimeoutClear(): void {
-        if ( !this.healthTimeout ) return;
-        clearTimeout( this.healthTimeout );
-        this.healthTimeout = undefined;
+        this.timeoutManager.clear( HEALTH_CHECK_TIMEOUT );
     }
 
 

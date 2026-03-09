@@ -1,31 +1,30 @@
-import { BaseModel } from "core/base/construction/component/BaseModel";
 import { INetworkConnectorRequestModel } from "../interface";
-import { NetworkConnectionStatus } from "../../../enums";
+import { NetworkConnectorModel } from "../../connector/mvc/NetworkConnectorModel";
 
 /**
  * Network connector request model
  */
-export class Model extends BaseModel implements INetworkConnectorRequestModel {
+export class NetworkConnectorRequestModel extends NetworkConnectorModel implements INetworkConnectorRequestModel {
     
-    get status(): NetworkConnectionStatus {
-        return this.data.status || NetworkConnectionStatus.DISCONNECTED;
-    }
-    set status( value: NetworkConnectionStatus ) {
-        this.data.status = value;
-    }
+    // get status(): NetworkConnectionStatus {
+    //     return this.data.status || NetworkConnectionStatus.DISCONNECTED;
+    // }
+    // set status( value: NetworkConnectionStatus ) {
+    //     this.data.status = value;
+    // }
     
-    get abortControllers(): Map< string, AbortController > {
-        return this.data.abortControllers || new Map();
-    }
-    set abortControllers( value: Map< string, AbortController > ) {
-        this.data.abortControllers = value;
-    }
+    // get abortControllers(): Map< string, AbortController > {
+    //     return this.data.abortControllers || new Map();
+    // }
+    // set abortControllers( value: Map< string, AbortController > ) {
+    //     this.data.abortControllers = value;
+    // }
     
-    /**
-     * Check if this connector is default
-     * Used for auto-selection when serverId is not specified
-     */
-    get isDefault(): boolean {
-        return this.data.isDefault || false;
-    }
+    // /**
+    //  * Check if this connector is default
+    //  * Used for auto-selection when serverId is not specified
+    //  */
+    // get isDefault(): boolean {
+    //     return this.data.isDefault || false;
+    // }
 }

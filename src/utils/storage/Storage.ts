@@ -1,16 +1,16 @@
 class Storage {
-    protected data: Map<string, any> = new Map();
+    protected data: Map< any, any > = new Map();
 
     isData( name: string ): boolean {
-        return this.data.has(name);
+        return this.data.has( name );
     }
 
     set( name: string, data: any ): void {
-        this.data.set(name, data);
+        this.data.set( name, data );
     }
 
     get( name: string ): any | undefined {
-        return this.data.get(name);
+        return this.data.get( name );
     }
 }
 

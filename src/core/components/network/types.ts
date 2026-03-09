@@ -1,50 +1,70 @@
 import { 
-    NetworkRequestMethod, 
-    NetworkConnectionType, 
-    NetworkRequestStatus,
-    NetworkCacheStorage,
-    NetworkConnectionStatus
+    NetworkRequestMethodEnum,
+    NetworkRequestStatusEnum,
+    NetworkConnectionTypeEnum,
+    NetworkCacheStorageEnum,
+    NetworkDataTypeEnum
 } from "./enums";
 
 /**
  * Network request configuration
  */
 type NetworkRequestType = {
-    serverId?: string; // Optional: auto-selected if omitted
-    endpoint: string;
-    method?: NetworkRequestMethod;
+    id?: number;
+
+    endpoint?: string; // Where to send the request (e.g. /api/data, actions)
+
+    data?: any; // Data for POST/PUT/PATCH
+
+    handlers?: NetworkRequestHandlersType; // Optional callbacks for this request
+
+    headers?: Record< string, string >; // Custom headers for this request
+
+    params?: Record< string, any >; // Additional params
+
+    options?: NetworkRequestOptionsType; // Additional options (cache, retry, priority, etc.)
+
+    auth?: NetworkRequestAuthType; // Optional auth params
+};
+
+type NetworkRequestHandlersType = {
+
+    onProgress?: ( request: NetworkRequestType ) => void; // Progress callback for uploads/downloads
+
+    onStatus?: ( status: NetworkRequestStatusEnum ) => void; // Status change callback
+
+    onSuccess?: ( request: NetworkRequestType ) => void; // Success callback
+
+    onError?: ( request: NetworkRequestType, error?: Error ) => void; // Error callback
+
+};
+
+type NetworkRequestOptionsType = {
+
+    // Optional server ID || generated automatically if omitted
+    serverID?: string;
+
+    // HTTP method (default GET)
+    method?: NetworkRequestMethodEnum;
+
+    // Headers
     headers?: Record< string, string >;
-    data?: any; // Данные для POST/PUT/PATCH
-    
-    // Cache settings
-    cache?: boolean;
-    
-    // Retry settings
-    retry?: number; // -1 = infinite retries
-    timeout?: number;
+
+    // Data type
+    dataType?: NetworkDataTypeEnum;
     
     // Priority
     priority?: number; // default 0, higher = earlier
     
     // Salt for cache busting
-    salt?: string; // adds /?req_ver=salt to URL
-    
-    // Auth (optional)
-    token?: string;
-    refreshToken?: string;
-    
-    // Callbacks
-    onProgress?: ( progress: number ) => void;
+    // salt?: string; // adds /?req_ver=salt to URL
+
 };
 
-/**
- * Network server cache configuration
- */
-type NetworkServerCacheConfig = {
-    enabled: boolean;
-    storage?: NetworkCacheStorage;
-    ttl?: number; // time to live in ms
-};
+type NetworkRequestAuthType = {
+    token?: string;
+    refreshToken?: string;
+}
 
 /**
  * Network server auth configuration
@@ -57,39 +77,31 @@ type NetworkServerAuthConfig = {
     headerPrefix?: string; // default 'Bearer'
 };
 
-/**
- * Network server configuration
- */
-type NetworkServerConfig = {
-    id: string;
-    host: string;
-    type: NetworkConnectionType;
-    
-    // Health check on init (blocks init if set)
-    healthCheck?: NetworkRequestType;
-    
-    // Retry settings
-    retry?: number; // -1 = infinite
-    retryDelay?: number; // ms between retries
-    timeout?: number;
-    
-    // Concurrent request limits (HTTP only)
-    maxConcurrent?: number; // default 1
-    
-    // Cache (optional)
-    cache?: NetworkServerCacheConfig;
-    
-    // Auth (optional)
-    auth?: NetworkServerAuthConfig;
-    
-    // Headers
-    headers?: Record< string, string >;
-    
-    // WebSocket settings
-    protocols?: string[];
-    reconnectOnClose?: boolean;
-    heartbeatInterval?: number; // for ping/pong in ms
-};
+type NetworkRequestStructType = {
+    id: number;
+    status: NetworkRequestStatusEnum;
+
+    // Request Config
+    url: string;
+    request: NetworkRequestType;
+    headers: Record< string, string >;
+    method: NetworkRequestMethodEnum;
+
+    progress: number; // 0 to 1
+
+    connectorUnit: any; // actual connector instance (e.g. XMLHttpRequest, WebSocket or custom loader)
+
+    priority: number;
+
+    retry: number;
+    retryDelay: number;
+
+    data?: any;
+
+    timeout?: NodeJS.Timeout;
+
+    error?: Error;
+}
 
 /**
  * Network connection request (queued request with metadata)
@@ -97,7 +109,7 @@ type NetworkServerConfig = {
 type NetworkConnectionRequest = {
     id: string; // unique request ID
     config: NetworkRequestType;
-    status: NetworkRequestStatus;
+    status: NetworkRequestStatusEnum;
     priority: number;
     attempt: number; // current retry attempt
     createdAt: number;
@@ -134,21 +146,74 @@ type NetworkErrorType = {
 /**
  * Network statistics
  */
-type NetworkStatsType = {
-    totalRequests: number;
-    successRequests: number;
-    errorRequests: number;
-    activeRequests: number;
-    queuedRequests: number;
+type NetworkRequestStatsType = {
+    total: number;
+    success: number;
+    errors: number;
+    active: number;
+    queued: number;
+};
+
+/**
+ * Network server configuration
+ */
+type NetworkConnectorType = {
+    server: NetworkConnectorServerType;
+    connection: NetworkConnectorConnectionType;
+    health?: NetworkConnectorHealthType;
+    cache?: NetworkConnectorCacheType;
+    auth?: NetworkConnectorAuthType;
+    headers?: Record< string, string >;
+};
+
+type NetworkConnectorServerType = {
+    host: string;
+    port?: number;
+    protocol?: string; // http || https || ws || wss
+    protocols?: string | string[]; // for WebSocket subprotocols
+};
+
+type NetworkConnectorConnectionType = {
+    type: NetworkConnectionTypeEnum;
+    method?: NetworkRequestMethodEnum;
+    retry?: number;
+    retryDelay?: number;
+    timeout?: number;
+    concurrent?: number;
+};
+
+type NetworkConnectorHealthType = {
+    test?: boolean;
+    heartbeatInterval?: number;
+    request?: NetworkRequestType;
+};
+
+type NetworkConnectorCacheType = {
+    storage?: NetworkCacheStorageEnum;
+    ttl?: number;
+};
+
+type NetworkConnectorAuthType = {
+    request?: string;
+    headerName?: string;
+    headerPrefix?: string;
 };
 
 export type {
     NetworkRequestType,
-    NetworkServerConfig,
-    NetworkServerCacheConfig,
+    NetworkRequestOptionsType,
+    NetworkRequestAuthType,
+    NetworkRequestStructType,
     NetworkServerAuthConfig,
     NetworkConnectionRequest,
     NetworkResponseType,
     NetworkErrorType,
-    NetworkStatsType
+    NetworkRequestStatsType,
+
+    NetworkConnectorType,
+    NetworkConnectorServerType,
+    NetworkConnectorConnectionType,
+    NetworkConnectorHealthType,
+    NetworkConnectorCacheType,
+    NetworkConnectorAuthType
 };

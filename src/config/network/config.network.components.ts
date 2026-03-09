@@ -2,10 +2,11 @@ import { ComponentConfigType } from 'core/components/types';
 import { ComponentNetworkNameEnum, ComponentTypeEnum, ComponentNameEnum } from 'core/components/enums';
 import { NetworkConnectorRequestComponent, NetworkConnectorSocketComponent } from 'core/components/network/components';
 import { 
-    NetworkConnectionType,
-    NetworkRequestMethod,
-    NetworkCacheStorage 
+    NetworkConnectionTypeEnum,
+    NetworkRequestMethodEnum,
+    NetworkCacheStorageEnum
 } from "core/components/network/enums";
+import { NetworkProtocolEnum } from 'core/components/network/enums';
 
 /**
  * Network connector components configuration
@@ -16,38 +17,54 @@ export const networkComponentsConfig: Record< string, ComponentConfigType > = {
         name: ComponentNetworkNameEnum.CONNECTOR_REQUEST,
         type: ComponentTypeEnum.SERVICE,
         dependent: [ ComponentNameEnum.STREAM ],
-        unique: true,
+        unique: false,
         instance: NetworkConnectorRequestComponent,
         params: {
-            id: 'server',
-            host: 'http://localhost:3001',
-            type: NetworkConnectionType.HTTP,
-            isDefault: true, // Default connector for requests without serverId
-            
+
+            id: 'http',                 // Server ID, it is must be unique
+            isDefault: true,            // Default connector for requests without serverId
+
+            server: {
+                protocol: NetworkProtocolEnum.HTTP,
+                host: 'localhost',
+                port: 3001,
+            },
+
+            connection: {
+                type: NetworkConnectionTypeEnum.HTTP,
+                method: NetworkRequestMethodEnum.GET,
+
+                // Retry settings
+                retry: 3,               // Number of retry attempts, -1 = infinite
+                retryDelay: 1000,
+                timeout: 10000,
+                
+                concurrent: 5,          // Max concurrent requests, HTTP only
+            },
+
             // Health check on init (blocks init until connected)
-            healthCheck: {
-                serverId: 'server',
-                endpoint: '/health',
-                method: NetworkRequestMethod.GET
+            health: {
+                test: false,                // Test connection after onStart
+                heartbeatInterval: 60000,   // less 1000 - no heartbeat
+                request: {
+                    endpoint: '/health',
+                    headers: {
+                        "Access-Control-Allow-Origin": "*"
+                    }
+                }
             },
             
-            // Retry settings
-            retry: 3,
-            retryDelay: 1000,
-            timeout: 5000,
-            
-            // Max concurrent requests
-            maxConcurrent: 5,
-            
-            // Cache settings
+            // Cache settings, if exist it is enabled
             cache: {
-                enabled: true,
-                storage: NetworkCacheStorage.MEMORY,
+                storage: NetworkCacheStorageEnum.MEMORY,
                 ttl: 60000 // 1 minute
             },
             
             // Auth settings
             auth: {
+                request: {
+                    endpoint: '/auth/refresh',
+                },
                 headerName: 'Authorization',
                 headerPrefix: 'Bearer'
             },
@@ -63,22 +80,42 @@ export const networkComponentsConfig: Record< string, ComponentConfigType > = {
         name: ComponentNetworkNameEnum.CONNECTOR_SOCKET,
         type: ComponentTypeEnum.SERVICE,
         dependent: [ ComponentNameEnum.STREAM ],
-        unique: true,
+        unique: false,
         instance: NetworkConnectorSocketComponent,
         params: {
+
             id: 'socket',
-            host: 'ws://localhost:3002',
-            type: NetworkConnectionType.WEBSOCKET,
-            
-            // Retry settings (infinite retries for WebSocket)
-            retry: -1,
-            retryDelay: 2000,
-            timeout: 30000,
+            isDefault: false,
+
+            server: {
+                protocol: NetworkProtocolEnum.WS,
+                host: 'localhost',
+                port: 3002,
+                protocols: [ 'v1.notification.protocol' ] // for WebSocket subprotocols
+            },
+
+            connection: {
+                type: NetworkConnectionTypeEnum.WEBSOCKET,
+
+                // Retry settings
+                retry: 3,
+                retryDelay: 1000,
+                timeout: 5000,
+
+                protocols: [ 'v1.notification.protocol' ],
+            },
+
+            health: {
+                heartbeatInterval: 30000,   // 30 seconds
+                request: {
+                    data: {
+                        type: 'PING'
+                    }
+                }
+            },
             
             // WebSocket settings
-            protocols: [ 'v1.notification.protocol' ],
-            reconnectOnClose: true,
-            heartbeatInterval: 30000 // 30 seconds
+            reconnectOnClose: true
         }
     }
 };
